@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTripDto, UpdatePriorityDto } from './dto';
+import { ApproveOrderDto } from './dto/approve-order.dto';
 
 @Injectable()
 export class DispatcherService {
@@ -48,25 +48,9 @@ export class DispatcherService {
     });
   }
 
-  async updatePriority(orderId: string, dto: UpdatePriorityDto) {
+  async approveOrder(orderId: string, dto: ApproveOrderDto) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    return this.prisma.order.update({
-      where: { id: orderId },
-      data: { priority: dto.priority },
-      include: { resource: true, requester: true, provider: true },
-    });
-  }
-
-  async createTrip(dto: CreateTripDto) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: dto.orderId },
       include: { trip: true },
     });
 
@@ -74,28 +58,72 @@ export class DispatcherService {
       throw new NotFoundException('Order not found');
     }
 
-    if (order.trip) {
-      throw new BadRequestException('Order already has a trip assigned');
+    if (order.status !== 'PENDING') {
+      throw new BadRequestException('Order is not in PENDING status');
     }
 
-    if (order.status !== 'PACKED' && order.status !== 'APPROVED') {
+    // Find a provider warehouse with sufficient inventory
+    const inventory = await this.prisma.inventory.findFirst({
+      where: {
+        resourceId: order.resourceId,
+        quantityAvailable: { gte: order.quantity },
+        // Provider must not be the requester
+        warehouseId: { not: order.requesterId },
+      },
+      orderBy: { quantityAvailable: 'desc' },
+    });
+
+    if (!inventory) {
       throw new BadRequestException(
-        'Order must be APPROVED or PACKED before creating a trip',
+        'No warehouse has sufficient inventory to fulfill this order',
       );
     }
 
-    const trip = await this.prisma.trip.create({
-      data: {
-        orderId: dto.orderId,
-        driverName: dto.driverName,
-      },
-      include: { order: { include: { resource: true, requester: true, provider: true } } },
-    });
+    // Transaction: reserve inventory + approve order + create trip
+    return this.prisma.$transaction(async (tx) => {
+      // Reserve inventory at the provider warehouse
+      await tx.inventory.update({
+        where: {
+          warehouseId_resourceId: {
+            warehouseId: inventory.warehouseId,
+            resourceId: order.resourceId,
+          },
+        },
+        data: {
+          quantityAvailable: { decrement: order.quantity },
+          quantityReserved: { increment: order.quantity },
+        },
+      });
 
-    return {
-      ...trip,
-      magicToken: trip.magicToken,
-    };
+      // Approve the order and assign provider
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'APPROVED',
+          providerId: inventory.warehouseId,
+        },
+        include: { resource: true, requester: true, provider: true },
+      });
+
+      // Auto-create trip with magic link
+      const trip = await tx.trip.create({
+        data: {
+          orderId,
+          driverName: dto.driverName,
+        },
+      });
+
+      return {
+        order: updatedOrder,
+        trip: {
+          id: trip.id,
+          magicToken: trip.magicToken,
+          status: trip.status,
+          driverName: trip.driverName,
+        },
+        magicLink: `/api/driver/${trip.magicToken}`,
+      };
+    });
   }
 
   async getActiveTrips() {
