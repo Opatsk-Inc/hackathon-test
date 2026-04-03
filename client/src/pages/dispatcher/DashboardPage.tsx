@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Map, MapControls } from "@/components/ui/map";
 
 const MOCK_DELIVERIES = [
   { id: "DLV-001", status: "in_transit", from: "Warehouse Kyiv-A", to: "Distribution Hub Lviv", cargo: "Електроніка — 240 шт", urgency: "critical" },
@@ -23,7 +24,9 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-6 xl:flex-row">
         {/* Карта */}
         <div className="flex min-h-[400px] flex-1 items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/10">
-          <span className="text-zinc-400 font-medium">[ Карта — placeholder ]</span>
+          <Map center={[-74.006, 40.7128]} zoom={11}>
+            <MapControls />
+          </Map>
         </div>
 
         {/* Список доставок */}
@@ -48,16 +51,16 @@ export default function DashboardPage() {
                     <TableCell className="font-mono font-bold text-xs">{d.id}</TableCell>
                     <TableCell>
                       <Badge variant={d.status as any}>
-                        {d.status === "in_transit" ? "В дорозі" : 
-                         d.status === "pending" ? "Очікує" : "Забрано"}
+                        {d.status === "in_transit" ? "В дорозі" :
+                          d.status === "pending" ? "Очікує" : "Забрано"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs">{d.from.replace("Warehouse ", "Склад ")}</TableCell>
                     <TableCell className="text-xs">{d.to.replace("Distribution Hub ", "Хаб ")}</TableCell>
                     <TableCell>
                       <Badge variant={d.urgency as any}>
-                        {d.urgency === "critical" ? "Критичний" : 
-                         d.urgency === "high" ? "Високий" : "Звичайний"}
+                        {d.urgency === "critical" ? "Критичний" :
+                          d.urgency === "high" ? "Високий" : "Звичайний"}
                       </Badge>
                     </TableCell>
                   </TableRow>
