@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'
-import { AuthUser } from '../auth/auth-user';
+import type { AuthUser } from '../auth/auth-user';
 import { UpdateUserRequest, UserResponse } from './models';
 
 @Injectable()

@@ -26,7 +26,7 @@ import {
   SignupRequest,
 } from './models';
 import { UserResponse } from '../user/models';
-import { AuthUser } from './auth-user';
+import type { AuthUser } from './auth-user';
 
 @ApiTags('auth')
 @Controller('auth')

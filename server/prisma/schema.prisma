@@ -1,7 +1,5 @@
 generator client {
   provider     = "prisma-client-js"
-  output       = "./generated"
-  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -17,8 +15,8 @@ model EmailChange {
   token      String   @id @db.Char(21)
   newEmail   String
   userId     Int      @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   validUntil DateTime @default(dbgenerated("(timezone('utc'::text, now()) + '2 days'::interval)")) @db.Timestamp(6)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("email-change")
 }
@@ -26,8 +24,8 @@ model EmailChange {
 model EmailVerification {
   token      String   @id @db.Char(21)
   userId     Int      @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   validUntil DateTime @default(dbgenerated("(timezone('utc'::text, now()) + '2 days'::interval)")) @db.Timestamp(6)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("email-verification")
 }

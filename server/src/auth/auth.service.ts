@@ -19,7 +19,7 @@ import {
   ResetPasswordRequest,
   SignupRequest,
 } from './models';
-import { AuthUser } from './auth-user';
+import type { AuthUser } from './auth-user';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
