@@ -4,7 +4,13 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --ignore-scripts
+COPY prisma ./prisma
+
+# Install all deps (postinstall runs prisma generate automatically)
+RUN npm ci
+
+# Explicitly generate Prisma client
+RUN npx prisma generate
 
 COPY . .
 RUN npm run build
@@ -28,5 +34,4 @@ USER app
 
 EXPOSE 1488
 
-# Run migrations then start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
