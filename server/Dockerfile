@@ -1,41 +1,29 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM node:20-slim AS builder
+FROM node:20-alpine AS builder
 
-# Build tools for bcrypt native compilation
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ openssl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Dummy DATABASE_URL for build time — prisma generate reads schema only, never connects
-ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+COPY --chown=node:node . .
 
-COPY package*.json ./
-COPY prisma ./prisma
-# Note: prisma.config.ts is intentionally NOT copied so prisma uses schema.prisma directly
-
-# npm install triggers postinstall → prisma generate (uses dummy URL above)
-RUN npm install
-
-COPY . .
-RUN npm run build
+RUN npm ci \
+    && npx prisma generate \
+    && npm run build \
+    && npm prune --omit=dev
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
-FROM node:20-slim AS production
-
-RUN addgroup --system app && adduser --system --ingroup app app
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy all node_modules (includes prisma devDep needed for migrate in CMD)
-COPY --from=builder --chown=app:app /app/node_modules ./node_modules
-COPY --from=builder --chown=app:app /app/dist ./dist
-COPY --from=builder --chown=app:app /app/package.json ./package.json
-COPY --from=builder --chown=app:app /app/prisma ./prisma
+COPY --chown=node:node --from=builder /app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/package*.json ./
+COPY --chown=node:node --from=builder /app/prisma ./prisma
 
-USER app
+USER node
 
 EXPOSE 1488
 
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
