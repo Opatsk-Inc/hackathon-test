@@ -1,21 +1,21 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+# Required for bcrypt native compilation
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Install all deps (postinstall runs prisma generate automatically)
 RUN npm ci
 
-# Explicitly generate Prisma client
 RUN npx prisma generate
 
 COPY . .
 RUN npm run build
 
-# Prune dev dependencies
 RUN npm prune --omit=dev
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
