@@ -60,63 +60,6 @@ export class WarehouseService {
     });
   }
 
-  async approveOrder(orderId: string, warehouseId: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    if (order.status !== 'PENDING') {
-      throw new BadRequestException('Order is not in PENDING status');
-    }
-
-    if (order.requesterId === warehouseId) {
-      throw new ForbiddenException('Cannot approve your own order');
-    }
-
-    // Check inventory availability
-    const inventory = await this.prisma.inventory.findUnique({
-      where: {
-        warehouseId_resourceId: {
-          warehouseId,
-          resourceId: order.resourceId,
-        },
-      },
-    });
-
-    if (!inventory || inventory.quantityAvailable < order.quantity) {
-      throw new BadRequestException('Insufficient inventory to approve this order');
-    }
-
-    // Use transaction: set APPROVED + providerId, move qty from available to reserved
-    return this.prisma.$transaction(async (tx) => {
-      await tx.inventory.update({
-        where: {
-          warehouseId_resourceId: {
-            warehouseId,
-            resourceId: order.resourceId,
-          },
-        },
-        data: {
-          quantityAvailable: { decrement: order.quantity },
-          quantityReserved: { increment: order.quantity },
-        },
-      });
-
-      return tx.order.update({
-        where: { id: orderId },
-        data: {
-          status: 'APPROVED',
-          providerId: warehouseId,
-        },
-        include: { resource: true, requester: true, provider: true },
-      });
-    });
-  }
-
   async packOrder(orderId: string, warehouseId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },

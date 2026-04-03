@@ -87,23 +87,6 @@ export class WarehouseController {
     return this.warehouseService.getMyOrders(user.warehouseId!);
   }
 
-  @Patch('api/orders/:orderId/approve')
-  @Roles(Role.WAREHOUSE_MANAGER)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Approve an order and become the provider (reserves inventory)' })
-  @ApiResponse({ status: 200, description: 'Order approved' })
-  @ApiResponse({ status: 400, description: 'Insufficient inventory or wrong status' })
-  @ApiResponse({ status: 403, description: 'Cannot approve own order / no warehouse' })
-  @ApiResponse({ status: 404, description: 'Order not found' })
-  @ApiParam({ name: 'orderId', description: 'ID of the order to approve' })
-  async approveOrder(
-    @Param('orderId') orderId: string,
-    @Usr() user: AuthUser,
-  ) {
-    this.ensureWarehouse(user);
-    return this.warehouseService.approveOrder(orderId, user.warehouseId!);
-  }
-
   @Patch('api/orders/:orderId/pack')
   @Roles(Role.WAREHOUSE_MANAGER)
   @HttpCode(HttpStatus.OK)

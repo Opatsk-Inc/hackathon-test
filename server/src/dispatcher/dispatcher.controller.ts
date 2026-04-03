@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Patch,
-  Post,
   Body,
   Param,
   HttpCode,
@@ -21,14 +20,14 @@ import { Role } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { DispatcherService } from './dispatcher.service';
-import { CreateTripDto, UpdatePriorityDto } from './dto';
+import { ApproveOrderDto } from './dto/approve-order.dto';
 
 @ApiTags('dispatcher')
 @ApiBearerAuth()
 @Controller()
 @UseGuards(AuthGuard(), RolesGuard)
 export class DispatcherController {
-  constructor(private readonly dispatcherService: DispatcherService) {}
+  constructor(private readonly dispatcherService: DispatcherService) { }
 
   // ─── WAREHOUSES ───────────────────────────────────────────────────────────────
 
@@ -63,32 +62,22 @@ export class DispatcherController {
     return this.dispatcherService.getAllOrders();
   }
 
-  @Patch('api/orders/:orderId/priority')
+  @Patch('api/orders/:orderId/approve')
   @Roles(Role.DISPATCHER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Manually update the priority of an order' })
-  @ApiResponse({ status: 200, description: 'Priority updated' })
+  @ApiOperation({ summary: 'Approve an order, reserve inventory, and auto-create a trip with magic link' })
+  @ApiResponse({ status: 200, description: 'Order approved, trip created with magicToken' })
+  @ApiResponse({ status: 400, description: 'No inventory available or wrong status' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  @ApiParam({ name: 'orderId', description: 'ID of the order' })
-  async updatePriority(
+  @ApiParam({ name: 'orderId', description: 'ID of the order to approve' })
+  async approveOrder(
     @Param('orderId') orderId: string,
-    @Body() dto: UpdatePriorityDto,
+    @Body() dto: ApproveOrderDto,
   ) {
-    return this.dispatcherService.updatePriority(orderId, dto);
+    return this.dispatcherService.approveOrder(orderId, dto);
   }
 
   // ─── TRIPS ────────────────────────────────────────────────────────────────────
-
-  @Post('api/trips')
-  @Roles(Role.DISPATCHER)
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a trip for an order and get a magic token' })
-  @ApiResponse({ status: 201, description: 'Trip created with magicToken' })
-  @ApiResponse({ status: 400, description: 'Order already has a trip or wrong status' })
-  @ApiResponse({ status: 404, description: 'Order not found' })
-  async createTrip(@Body() dto: CreateTripDto) {
-    return this.dispatcherService.createTrip(dto);
-  }
 
   @Get('api/trips/active')
   @Roles(Role.DISPATCHER)
