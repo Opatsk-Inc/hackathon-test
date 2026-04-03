@@ -7,10 +7,17 @@ WORKDIR /app
 
 COPY --chown=node:node . .
 
-RUN npm ci \
-    && npx prisma generate \
-    && npm run build \
-    && npm prune --omit=dev
+# Install deps, skip postinstall (it runs prisma generate which needs DB URL)
+RUN npm ci --ignore-scripts
+
+# Generate Prisma client from schema.prisma (prisma.config.ts excluded via .dockerignore)
+RUN npx prisma generate
+
+# Build NestJS
+RUN npm run build
+
+# Remove dev dependencies
+RUN npm prune --omit=dev
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
 FROM node:20-alpine AS production
