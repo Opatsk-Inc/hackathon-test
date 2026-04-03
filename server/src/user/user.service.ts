@@ -1,24 +1,15 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'
+import { PrismaService } from '../prisma/prisma.service';
 import type { AuthUser } from '../auth/auth-user';
 import { UpdateUserRequest, UserResponse } from './models';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   public async getUserEntityById(id: number): Promise<AuthUser | null> {
     return this.prisma.user.findUnique({
       where: { id },
-    });
-  }
-
-  public async getUserEntityByUsername(
-    username: string,
-  ): Promise<AuthUser | null> {
-    const normalizedUsername = username.toLowerCase();
-    return this.prisma.user.findUnique({
-      where: { username: normalizedUsername },
     });
   }
 
@@ -31,11 +22,6 @@ export class UserService {
         where: { id: userId },
         data: {
           ...updateRequest,
-          birthDate:
-            updateRequest.birthDate !== null &&
-              updateRequest.birthDate !== undefined
-              ? new Date(updateRequest.birthDate)
-              : updateRequest.birthDate,
         },
       });
 

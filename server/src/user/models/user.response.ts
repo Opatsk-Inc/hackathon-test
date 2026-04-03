@@ -1,37 +1,37 @@
 import type { User } from '@prisma/client';
 import { Role } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponse {
+  @ApiProperty({ description: 'User ID' })
   id: number;
 
-  username: string;
-
+  @ApiProperty({ description: 'User email address' })
   email: string;
 
-  emailVerified: boolean;
+  @ApiProperty({ description: 'First name' })
+  firstName: string;
 
-  name: string;
+  @ApiProperty({ description: 'Last name' })
+  lastName: string;
 
-  image: string | null;
-
+  @ApiProperty({ enum: Role, description: 'User role' })
   role: Role;
 
-  birthDate: Date | null;
+  @ApiProperty({ description: 'Assigned warehouse ID', nullable: true })
+  warehouseId: string | null;
 
+  @ApiProperty({ description: 'Registration date' })
   registrationDate: Date;
 
   static fromUserEntity(entity: User): UserResponse {
     const response = new UserResponse();
     response.id = entity.id;
-    response.username = entity.username;
     response.email = entity.email;
-    response.emailVerified = entity.emailVerified;
-    response.name = [entity.firstName, entity.middleName, entity.lastName]
-      .filter((s) => s !== null)
-      .join(' ');
-    response.image = entity.image;
+    response.firstName = entity.firstName;
+    response.lastName = entity.lastName;
     response.role = entity.role;
-    response.birthDate = entity.birthDate;
+    response.warehouseId = entity.warehouseId;
     response.registrationDate = entity.registrationDate;
     return response;
   }

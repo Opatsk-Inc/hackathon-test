@@ -1,41 +1,45 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
+  IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 
 export class SignupRequest {
+  @ApiProperty({ description: 'User email address', example: 'user@example.com' })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
-  // alphanumeric characters and - are valid
-  // you can change this as you like
-  @Matches(RegExp('^[a-zA-Z0-9\\-]+$'))
-  @MaxLength(20)
-  username: string;
-
+  @ApiProperty({ description: 'Password (min 8 characters)', example: 'securePass123', minLength: 8 })
   @IsNotEmpty()
   @MinLength(8)
   password: string;
 
+  @ApiProperty({ description: 'First name', example: 'John' })
   @IsNotEmpty()
-  @Matches(RegExp('^[A-Za-zıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
+  @Matches(RegExp('^[A-Za-zА-Яа-яІіЇїЄєҐґıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
   @MaxLength(20)
   firstName: string;
 
+  @ApiProperty({ description: 'Last name', example: 'Doe' })
   @IsNotEmpty()
-  @Matches(RegExp('^[A-Za-zıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
+  @Matches(RegExp('^[A-Za-zА-Яа-яІіЇїЄєҐґıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
   @MaxLength(20)
   lastName: string;
 
+  @ApiProperty({ enum: Role, description: 'User role', example: Role.WAREHOUSE_MANAGER })
+  @IsEnum(Role)
+  role: Role;
+
+  @ApiProperty({ description: 'Warehouse ID to assign (required for WAREHOUSE_MANAGER)', required: false })
   @IsOptional()
-  @IsNotEmpty()
-  @Matches(RegExp('^[A-Za-zıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
-  @MaxLength(20)
-  middleName?: string;
+  @IsString()
+  warehouseId?: string;
 }
