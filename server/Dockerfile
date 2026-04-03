@@ -1,33 +1,25 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM node:20-slim AS builder
 
-# Build tools for bcrypt native compilation (Debian)
+# Build tools for bcrypt native compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ openssl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Accept DATABASE_URL as build arg (Coolify passes it automatically)
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
+# Dummy DATABASE_URL for build time — prisma generate reads schema only, never connects
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 
-# Copy deps + prisma config before install
 COPY package*.json ./
 COPY prisma ./prisma
-COPY prisma.config.ts ./
-COPY tsconfig*.json ./
+# Note: prisma.config.ts is intentionally NOT copied so prisma uses schema.prisma directly
 
-# Install all deps, skip postinstall to control generate step
-RUN npm install --ignore-scripts
-
-# Generate Prisma client (DATABASE_URL is available from ARG above)
-RUN ./node_modules/.bin/prisma generate
+# npm install triggers postinstall → prisma generate (uses dummy URL above)
+RUN npm install
 
 COPY . .
 RUN npm run build
-
-RUN npm prune --omit=dev
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
 FROM node:20-slim AS production
@@ -36,11 +28,11 @@ RUN addgroup --system app && adduser --system --ingroup app app
 
 WORKDIR /app
 
-COPY --from=builder --chown=app:app /app/dist ./dist
+# Copy all node_modules (includes prisma devDep needed for migrate in CMD)
 COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+COPY --from=builder --chown=app:app /app/dist ./dist
 COPY --from=builder --chown=app:app /app/package.json ./package.json
 COPY --from=builder --chown=app:app /app/prisma ./prisma
-COPY --from=builder --chown=app:app /app/prisma.config.ts ./prisma.config.ts
 
 USER app
 
