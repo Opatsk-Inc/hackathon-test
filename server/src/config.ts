@@ -1,6 +1,6 @@
 export default {
   jwt: {
-    secretOrKey: '__JWT_SECRET_KEY__',
+    secretOrKey: process.env.JWT_SECRET,
     expiresIn: 86400,
   },
   // You can also use any other email sending services
