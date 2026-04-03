@@ -7,16 +7,15 @@ WORKDIR /app
 
 COPY --chown=node:node . .
 
-# Install deps, skip postinstall (it runs prisma generate which needs DB URL)
 RUN npm ci --ignore-scripts
 
-# Generate Prisma client from schema.prisma (prisma.config.ts excluded via .dockerignore)
+# Override DATABASE_URL injected by Coolify (password contains # which breaks URL parsing)
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+
 RUN npx prisma generate
 
-# Build NestJS
 RUN npm run build
 
-# Remove dev dependencies
 RUN npm prune --omit=dev
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
