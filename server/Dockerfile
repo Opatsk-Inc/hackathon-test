@@ -9,9 +9,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
 
-RUN npm ci
+# Skip postinstall (it runs prisma generate which needs DATABASE_URL at build time)
+RUN npm install --ignore-scripts
 
-RUN npx prisma generate
+# Generate Prisma client with a dummy URL (generate only reads schema, no DB connection)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
 COPY . .
 RUN npm run build
