@@ -37,4 +37,4 @@ USER app
 
 EXPOSE 1488
 
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/main"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma generate --schema=prisma/schema.prisma && ./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/main"]
