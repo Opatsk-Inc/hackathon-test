@@ -19,13 +19,10 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-    command: ["sh", "-c", "redis-server --requirepass $$REDIS_PASSWORD"]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,10 +34,12 @@ services:
       context: ./server
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      REDIS_URL: redis://redis:6379
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      EXPIRATION_TIME: ${EXPIRATION_TIME}
     depends_on:
       postgres:
         condition: service_healthy
