@@ -22,7 +22,7 @@ import { Role } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Usr } from '../user/user.decorator';
-import { AuthUser } from '../auth/auth-user';
+import type { AuthUser } from '../auth/auth-user';
 import { WarehouseService } from './warehouse.service';
 import { AdjustInventoryDto, CreateOrderDto } from './dto';
 

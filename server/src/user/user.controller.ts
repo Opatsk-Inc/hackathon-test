@@ -14,7 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 import { Usr } from './user.decorator';
 import { UpdateUserRequest } from './models';
-import { AuthUser } from '../auth/auth-user';
+import type { AuthUser } from '../auth/auth-user';
 
 @ApiTags('users')
 @Controller('users')
