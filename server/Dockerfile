@@ -9,11 +9,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Skip postinstall (it runs prisma generate which needs DATABASE_URL at build time)
+# Skip postinstall (prisma generate runs separately below)
 RUN npm install --ignore-scripts
 
-# Generate Prisma client with a dummy URL (generate only reads schema, no DB connection)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
+# Use local prisma binary directly (no npx download)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+    ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
 
 COPY . .
 RUN npm run build
@@ -36,4 +37,4 @@ USER app
 
 EXPOSE 1488
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/main"]
