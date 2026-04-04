@@ -6,9 +6,11 @@ import { PrismaService } from './prisma/prisma.service';
 import { WarehouseModule } from './warehouse/warehouse.module';
 import { DispatcherModule } from './dispatcher/dispatcher.module';
 import { DriverModule } from './driver/driver.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     AuthModule,
     WarehouseModule,
@@ -20,4 +22,4 @@ import { DriverModule } from './driver/driver.module';
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }
