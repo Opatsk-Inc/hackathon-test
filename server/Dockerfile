@@ -9,8 +9,12 @@ COPY --chown=node:node . .
 
 RUN npm ci --ignore-scripts
 
-# Override DATABASE_URL injected by Coolify (password contains # which breaks URL parsing)
-ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+# Dummy DB params for prisma generate (no actual connection needed at build time)
+ENV POSTGRES_USER="postgres"
+ENV POSTGRES_PASSWORD="postgres"
+ENV POSTGRES_HOST="localhost"
+ENV POSTGRES_PORT="5432"
+ENV POSTGRES_DB="postgres"
 
 RUN npx prisma generate
 

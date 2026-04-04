@@ -2,7 +2,17 @@ import { PrismaClient, OrderStatus, Priority, TripStatus } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! } as any);
+function buildDatabaseUrl(): string {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  const user = encodeURIComponent(process.env.POSTGRES_USER || 'postgres');
+  const password = encodeURIComponent(process.env.POSTGRES_PASSWORD || '');
+  const host = process.env.POSTGRES_HOST || 'localhost';
+  const port = process.env.POSTGRES_PORT || '5432';
+  const db = encodeURIComponent(process.env.POSTGRES_DB || 'postgres');
+  return `postgresql://${user}:${password}@${host}:${port}/${db}`;
+}
+
+const adapter = new PrismaPg({ connectionString: buildDatabaseUrl() } as any);
 const prisma = new PrismaClient({ adapter } as any);
 
 function randomInt(min: number, max: number) {
