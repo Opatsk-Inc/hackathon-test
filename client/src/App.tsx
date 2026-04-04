@@ -7,6 +7,11 @@ import WarehousesPage from "@/pages/dispatcher/WarehousesPage"
 import RequestsPage from "@/pages/dispatcher/RequestsPage"
 import DriversPage from "@/pages/dispatcher/DriversPage"
 import LoginPage from "@/pages/auth/LoginPage"
+import ManagerLayout from "@/features/manager-layout"
+import ManagerResourcesPage from "@/pages/manager/ResourcesPage"
+import ManagerOrdersPage from "@/pages/manager/OrdersPage"
+import ManagerReplenishPage from "@/pages/manager/ReplenishPage"
+import ManagerInventoryPage from "@/pages/manager/InventoryPage"
 
 export function App() {
   return (
@@ -20,6 +25,15 @@ export function App() {
             <Route path="warehouses" element={<WarehousesPage />} />
             <Route path="requests" element={<RequestsPage />} />
             <Route path="drivers" element={<DriversPage />} />
+          </Route>
+        </Route>
+        <Route element={<RequireAuth allowedRoles={["WAREHOUSE_MANAGER"]} />}>
+          <Route path="manager" element={<ManagerLayout />}>
+            <Route index element={<ManagerResourcesPage />} />
+            <Route path="resources" element={<ManagerResourcesPage />} />
+            <Route path="orders" element={<ManagerOrdersPage />} />
+            <Route path="replenish" element={<ManagerReplenishPage />} />
+            <Route path="inventory" element={<ManagerInventoryPage />} />
           </Route>
         </Route>
       </Routes>

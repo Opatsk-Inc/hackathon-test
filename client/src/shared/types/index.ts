@@ -26,6 +26,8 @@ export interface IOrder {
   quantity: number
   createdAt: string
   updatedAt: string
+  requesterId?: string
+  providerId?: string
   provider?: IProvider
   requester?: IRequester
   resource?: IResource
