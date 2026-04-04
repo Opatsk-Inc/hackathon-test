@@ -7,10 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 import { JwtPayload } from './jwt-payload';
-import {
-  LoginRequest,
-  SignupRequest,
-} from './models';
+import { LoginRequest, SignupRequest } from './models';
 import type { AuthUser } from './auth-user';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -28,8 +25,8 @@ export class AuthService {
         data: {
           email: signupRequest.email.toLowerCase(),
           passwordHash: await bcrypt.hash(signupRequest.password, 10),
-          firstName: signupRequest.firstName,
-          lastName: signupRequest.lastName,
+          firstName: signupRequest.firstName ?? '',
+          lastName: signupRequest.lastName ?? '',
           role: signupRequest.role,
           warehouseId: signupRequest.warehouseId ?? null,
         },
