@@ -1,4 +1,6 @@
-import { LayoutDashboard, Truck, MapPin } from "lucide-react"
+import { useState, useCallback, useMemo } from "react"
+import type * as React from "react"
+import { LayoutDashboard, Truck, MapPin, TruckIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { PageLoader } from "@/components/ui/loaders"
@@ -14,20 +16,250 @@ import {
   Map,
   MapControls,
   MapMarker,
+  MapRoute,
   MarkerContent,
   MarkerTooltip,
 } from "@/components/ui/map"
-import { useDashboard } from "@/features/dashboard"
+import { useMap } from "@/features/dashboard/hooks/use-map-context"
+import {
+  useDashboard,
+  useDashboardTripTracks,
+  useDashboardRoadRoutes,
+  useNonOverlappingMarkers,
+} from "@/features/dashboard"
 import type { IWarehouse } from "@/shared/types"
-import type { IActiveTrip } from "@/features/trips/types/trip.types"
+import type { IActiveTrip, LngLat } from "@/features/trips/types/trip.types"
 import {
   formatPriorityLevel,
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
 import { formatTripStatus } from "@/features/trips/utils/trip.utils"
 
+const ROUTE_COLORS_BY_STATUS: Record<string, string> = {
+  SOS: "#ef4444",
+  EN_ROUTE: "#3b82f6",
+  PENDING: "#f59e0b",
+  COMPLETED: "#6b7280",
+  DELIVERED: "#6b7280",
+  CANCELLED: "#6b7280",
+}
+
+const DRIVER_MARKER_COLORS: Record<string, string> = {
+  SOS: "#ef4444",
+  EN_ROUTE: "#3b82f6",
+  PENDING: "#f59e0b",
+}
+
+/** Compute heading angle in degrees from last two points of a route. */
+function computeHeading(track: LngLat[]): number {
+  if (track.length < 2) return 0
+  const [lng1, lat1] = track[track.length - 2]
+  const [lng2, lat2] = track[track.length - 1]
+  const dLng = lng2 - lng1
+  const dLat = lat2 - lat1
+  const angle = (Math.atan2(dLng, dLat) * 180) / Math.PI
+  return angle < 0 ? angle + 360 : angle
+}
+
+/** Inner map content with overlap resolution */
+function DashboardMapContent({
+  warehouses,
+  activeTrips,
+  roadRoutes,
+  baseTracks,
+  hoveredTripId,
+  setHoveredTripId,
+}: {
+  warehouses: IWarehouse[]
+  activeTrips: IActiveTrip[]
+  roadRoutes: Record<string, { geometry: LngLat[] | null }>
+  baseTracks: Record<string, LngLat[]>
+  hoveredTripId: string | null
+  setHoveredTripId: (id: string | null) => void
+}) {
+  const { map, isLoaded } = useMap()
+
+  const validTrips = useMemo(
+    () =>
+      activeTrips.filter(
+        (t): t is IActiveTrip & { currentLat: number; currentLng: number } =>
+          typeof t.currentLat === "number" &&
+          typeof t.currentLng === "number" &&
+          Number.isFinite(t.currentLat) &&
+          Number.isFinite(t.currentLng)
+      ),
+    [activeTrips]
+  )
+
+  const { positions, isOverlapMode } = useNonOverlappingMarkers({
+    map,
+    warehouses,
+    activeTrips: validTrips,
+  })
+
+  // Hook already provides animated display positions — use them directly.
+  const getPosition = useCallback(
+    (id: string) => {
+      const p = positions.get(id)
+      return p ? { lng: p.displayLng, lat: p.displayLat } : undefined
+    },
+    [positions]
+  )
+
+  if (!map || !isLoaded) return null
+
+  return (
+    <>
+      <MapControls />
+
+      {/* Warehouse markers */}
+      {warehouses.map((w: IWarehouse) => {
+        const pos = getPosition(`warehouse-${w.id}`)
+        const lng = pos?.lng ?? w.lng
+        const lat = pos?.lat ?? w.lat
+
+        return (
+          <MapMarker key={w.id} longitude={lng} latitude={lat}>
+            <MarkerContent>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110">
+                <MapPin className="h-4 w-4" />
+              </div>
+            </MarkerContent>
+            <MarkerTooltip>
+              <div className="flex min-w-52 flex-col gap-0.5 p-1">
+                <strong className="text-sm font-semibold">{w.name}</strong>
+                <span className="text-xs text-muted-foreground">
+                  {w.address}
+                </span>
+                <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs">
+                  <span className="text-muted-foreground">Зарезервовано:</span>
+                  <strong className="text-foreground">
+                    {w.inventory?.reduce<number>(
+                      (acc: number, inv) => acc + inv.quantityReserved,
+                      0
+                    ) || 0}{" "}
+                    од.
+                  </strong>
+                </div>
+              </div>
+            </MarkerTooltip>
+          </MapMarker>
+        )
+      })}
+
+      {/* Route lines */}
+      {activeTrips.map((trip: IActiveTrip) => {
+        const coordinates = roadRoutes[trip.id]?.geometry
+        if (!coordinates || coordinates.length < 2) return null
+
+        const color = ROUTE_COLORS_BY_STATUS[trip.status] ?? "#6b7280"
+        const isHovered = hoveredTripId === trip.id
+        const hasAnyHover = hoveredTripId !== null
+        const baseWidth = isHovered ? 7 : hasAnyHover ? 3 : 4
+        const baseOpacity = isHovered ? 0.3 : hasAnyHover ? 0.25 : 0.65
+
+        return (
+          <MapRoute
+            key={`route-base-${trip.id}`}
+            id={`route-base-${trip.id}`}
+            coordinates={coordinates}
+            color={color}
+            width={baseWidth}
+            opacity={baseOpacity}
+          />
+        )
+      })}
+
+      {/* Overlay highlighted route */}
+      {activeTrips.map((trip: IActiveTrip) => {
+        if (trip.id !== hoveredTripId) return null
+        const coordinates = roadRoutes[trip.id]?.geometry
+        if (!coordinates || coordinates.length < 2) return null
+        const color = ROUTE_COLORS_BY_STATUS[trip.status] ?? "#6b7280"
+
+        return (
+          <MapRoute
+            key={`route-overlay-${trip.id}`}
+            id={`route-overlay-${trip.id}`}
+            coordinates={coordinates}
+            color={color}
+            width={7}
+            opacity={0.95}
+            animated
+            animationSpeed={1500}
+          />
+        )
+      })}
+
+      {/* Driver icons */}
+      {validTrips.map((trip) => {
+        const pos = getPosition(`driver-${trip.id}`)
+        const lng = pos?.lng ?? trip.currentLng
+        const lat = pos?.lat ?? trip.currentLat
+
+        const isHovered = hoveredTripId === trip.id
+        const color = DRIVER_MARKER_COLORS[trip.status] ?? "#6b7280"
+        const track = roadRoutes[trip.id]?.geometry ?? baseTracks[trip.id]
+        const rotation = track ? computeHeading(track) : 0
+        const providerName = trip.order.provider?.name || "Склад"
+        const requesterName = trip.order.requester?.name || "Пункт призначення"
+
+        return (
+          <MapMarker
+            key={`driver-${trip.id}`}
+            longitude={lng}
+            latitude={lat}
+            rotation={rotation}
+            rotationAlignment="map"
+          >
+            <MarkerContent>
+              <div
+                className={
+                  "flex h-8 w-8 items-center justify-center rounded-full border-2 border-white shadow-lg transition-transform duration-200 " +
+                  (isHovered
+                    ? "scale-125 ring-4 ring-primary/30"
+                    : "hover:scale-110")
+                }
+                style={{
+                  backgroundColor: color,
+                  zIndex: isHovered ? 10 : 1,
+                }}
+                onMouseEnter={() => setHoveredTripId(trip.id)}
+                onMouseLeave={() => setHoveredTripId(null)}
+              >
+                <TruckIcon className="h-4 w-4 text-white" />
+              </div>
+            </MarkerContent>
+            <MarkerTooltip>
+              <div className="flex min-w-48 flex-col gap-1">
+                <strong className="text-sm">Водій · {trip.status}</strong>
+                <span className="text-xs text-muted-foreground">
+                  Маршрут: {providerName} → {requesterName}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  Trip: {trip.id.split("-")[0]}
+                </span>
+              </div>
+            </MarkerTooltip>
+          </MapMarker>
+        )
+      })}
+
+      {/* Overlap mode indicator */}
+      {isOverlapMode && (
+        <div className="absolute bottom-4 left-4 z-10 rounded-md bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+          Markers adjusted to prevent overlap
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function DashboardPage() {
   const { warehouses, activeTrips, error, isLoading } = useDashboard()
+  const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
+  const roadRoutes = useDashboardRoadRoutes({ baseTracks })
+  const [hoveredTripId, setHoveredTripId] = useState<string | null>(null)
 
   if (error) {
     return (
@@ -50,38 +282,14 @@ export default function DashboardPage() {
           <Card className="relative min-h-125 w-full overflow-hidden border-dashed bg-muted/10 shadow-none">
             <CardContent className="absolute inset-0 p-0">
               <Map center={[31.1656, 48.3794]} zoom={5}>
-                <MapControls />
-                {warehouses.map((w: IWarehouse) => (
-                  <MapMarker key={w.id} longitude={w.lng} latitude={w.lat}>
-                    <MarkerContent>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110">
-                        <MapPin className="h-4 w-4" />
-                      </div>
-                    </MarkerContent>
-                    <MarkerTooltip>
-                      <div className="flex min-w-52 flex-col gap-0.5 p-1">
-                        <strong className="text-sm font-semibold">
-                          {w.name}
-                        </strong>
-                        <span className="text-xs text-muted-foreground">
-                          {w.address}
-                        </span>
-                        <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs">
-                          <span className="text-muted-foreground">
-                            Зарезервовано:
-                          </span>
-                          <strong className="text-foreground">
-                            {w.inventory?.reduce<number>(
-                              (acc: number, inv) => acc + inv.quantityReserved,
-                              0
-                            ) || 0}{" "}
-                            од.
-                          </strong>
-                        </div>
-                      </div>
-                    </MarkerTooltip>
-                  </MapMarker>
-                ))}
+                <DashboardMapContent
+                  warehouses={warehouses}
+                  activeTrips={activeTrips}
+                  roadRoutes={roadRoutes}
+                  baseTracks={baseTracks}
+                  hoveredTripId={hoveredTripId}
+                  setHoveredTripId={setHoveredTripId}
+                />
               </Map>
             </CardContent>
           </Card>

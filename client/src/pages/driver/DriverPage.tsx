@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useDriverTrip } from "@/features/driver-magic-link/hooks/useDriverTrip"
 import { DataLoader } from "@/components/ui/loaders"
@@ -40,7 +40,62 @@ export default function DriverPage() {
     finishTrip,
     isFinishingTrip,
     finishTripError,
+    sendGpsMutation,
   } = useDriverTrip(magicToken)
+
+  const gpsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const gpsInFlightRef = useRef(false)
+
+  useEffect(() => {
+    const isActive = trip?.status === "EN_ROUTE" && !!magicToken
+    if (!isActive) {
+      if (gpsIntervalRef.current) {
+        clearInterval(gpsIntervalRef.current)
+        gpsIntervalRef.current = null
+      }
+      return
+    }
+
+    gpsIntervalRef.current = setInterval(() => {
+      if (gpsInFlightRef.current) return
+      if (!navigator.geolocation) return
+
+      gpsInFlightRef.current = true
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          if (
+            latitude >= -90 &&
+            latitude <= 90 &&
+            longitude >= -180 &&
+            longitude <= 180
+          ) {
+            sendGpsMutation.mutate(
+              { lat: latitude, lng: longitude },
+              {
+                onSettled: () => {
+                  gpsInFlightRef.current = false
+                },
+              }
+            )
+          } else {
+            gpsInFlightRef.current = false
+          }
+        },
+        () => {
+          gpsInFlightRef.current = false
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 5000 }
+      )
+    }, 10_000)
+
+    return () => {
+      if (gpsIntervalRef.current) {
+        clearInterval(gpsIntervalRef.current)
+        gpsIntervalRef.current = null
+      }
+    }
+  }, [trip?.status, magicToken, sendGpsMutation])
 
   const [sosModalOpen, setSosModalOpen] = useState(false)
 

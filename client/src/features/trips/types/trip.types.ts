@@ -8,6 +8,8 @@ export interface IActiveTrip extends SharedITrip {
     quantity: number
     createdAt: string
     updatedAt: string
+    providerId?: string
+    requesterId?: string
     provider?: {
       id: string
       name: string
@@ -39,3 +41,13 @@ export interface IResolveSosResponse {
   sosResolvedAt?: string
   sosResolvedBy?: string
 }
+
+export interface ITripPoint {
+  id: string
+  tripId: string
+  lat: number
+  lng: number
+  createdAt: string
+}
+
+export type LngLat = [number, number]
