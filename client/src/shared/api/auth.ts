@@ -103,13 +103,24 @@ export function getCurrentUserRole(): Role | null {
   return normalizeRole(payload.role)
 }
 
+/** Get current user's warehouseId from token. Returns null if not authenticated. */
+export function getCurrentUserWarehouseId(): string | null {
+  const token = getToken()
+  if (!token) return null
+  const payload = decodeJWT(token)
+  if (!payload) return null
+  const now = Date.now() / 1000
+  if (payload.exp <= now) return null
+  return payload.warehouseId ?? null
+}
+
 /** Get redirect path based on role */
 export function getRoleDefaultPath(role: Role | null): string {
   switch (role) {
     case "DISPATCHER":
       return "/dispatcher"
     case "WAREHOUSE_MANAGER":
-      return "/" // fallback until manager routes exist
+      return "/manager"
     default:
       return "/"
   }
