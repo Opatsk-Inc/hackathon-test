@@ -1,10 +1,25 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  isAuthenticated,
+  getCurrentUserRole,
+  getRoleDefaultPath,
+  setToken,
+} from "@/shared/api/auth"
 
 export default function LoginPage() {
   const navigate = useNavigate()
+
+  // Redirect authenticated user to their role path
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const role = getCurrentUserRole()
+      navigate(getRoleDefaultPath(role), { replace: true })
+    }
+  }, [navigate])
+
   const [email, setEmail] = useState("manager@test.com")
   const [password, setPassword] = useState("password123")
   const [loading, setLoading] = useState(false)
@@ -19,7 +34,7 @@ export default function LoginPage() {
       const response = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       })
 
       if (!response.ok) {
@@ -28,13 +43,14 @@ export default function LoginPage() {
 
       const data = await response.json()
       if (data.token) {
-        localStorage.setItem("logitrack_token", data.token)
-        navigate("/dispatcher")
+        setToken(data.token)
+        const role = getCurrentUserRole()
+        navigate(getRoleDefaultPath(role))
       } else {
         throw new Error("No token received")
       }
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setLoading(false)
     }
@@ -52,7 +68,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none" htmlFor="email">
+            <label className="text-sm leading-none font-medium" htmlFor="email">
               Email
             </label>
             <Input
@@ -64,7 +80,10 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none" htmlFor="password">
+            <label
+              className="text-sm leading-none font-medium"
+              htmlFor="password"
+            >
               Password
             </label>
             <Input
