@@ -189,4 +189,19 @@ export class DispatcherService {
       });
     });
   }
+
+  async getTripTrack(tripId: string) {
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: tripId },
+    });
+
+    if (!trip) {
+      throw new NotFoundException('Trip not found');
+    }
+
+    return this.prisma.tripPoint.findMany({
+      where: { tripId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
 }

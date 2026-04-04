@@ -83,6 +83,12 @@ export class DriverService {
       data: {
         currentLat: dto.lat,
         currentLng: dto.lng,
+        points: {
+          create: {
+            lat: dto.lat,
+            lng: dto.lng,
+          },
+        },
       },
     });
   }
