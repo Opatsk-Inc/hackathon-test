@@ -31,7 +31,7 @@ export function App() {
         <Route element={<RequireAuth allowedRoles={["WAREHOUSE_MANAGER"]} />}>
           <Route path="manager" element={<ManagerLayout />}>
             <Route index element={<ManagerResourcesPage />} />
-            <Route path="resources" element={<ManagerResourcesPage />} />
+            <Route index element={<ManagerResourcesPage />} />
             <Route path="orders" element={<ManagerOrdersPage />} />
             <Route path="replenish" element={<ManagerReplenishPage />} />
             <Route path="inventory" element={<ManagerInventoryPage />} />

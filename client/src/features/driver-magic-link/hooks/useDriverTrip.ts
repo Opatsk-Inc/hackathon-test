@@ -53,6 +53,23 @@ async function finishTrip(magicToken: string): Promise<ITripWithOrder> {
   return response.json()
 }
 
+async function sendGps(
+  magicToken: string,
+  lat: number,
+  lng: number
+): Promise<void> {
+  const response = await fetch(`/api/driver/${magicToken}/gps`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat, lng }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "Unknown error")
+    throw new Error(`Error ${response.status}: ${errorText}`)
+  }
+}
+
 export function useDriverTrip(magicToken: string) {
   const queryClient = useQueryClient()
 
@@ -90,6 +107,12 @@ export function useDriverTrip(magicToken: string) {
     },
   })
 
+  const sendGpsMutation = useMutation({
+    mutationFn: ({ lat, lng }: { lat: number; lng: number }) =>
+      sendGps(magicToken, lat, lng),
+    retry: false,
+  })
+
   const notFound = error instanceof Error && error.message.includes("404")
 
   return {
@@ -107,5 +130,6 @@ export function useDriverTrip(magicToken: string) {
     finishTrip: finishTripMutation.mutate,
     isFinishingTrip: finishTripMutation.isPending,
     finishTripError: finishTripMutation.error,
+    sendGpsMutation,
   }
 }
