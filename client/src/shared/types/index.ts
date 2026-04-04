@@ -1,3 +1,5 @@
+export type Role = "DISPATCHER" | "WAREHOUSE_MANAGER"
+
 export interface IResource {
   id: string
   name: string

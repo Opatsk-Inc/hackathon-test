@@ -1,8 +1,10 @@
 /**
  * Basic fetch wrapper to automatically add Authorization token.
  */
+import { getToken, removeToken } from "./auth"
+
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem("logitrack_token")
+  const token = getToken()
 
   const headers = new Headers(options.headers || {})
   headers.set("Content-Type", "application/json")
@@ -16,14 +18,10 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     headers,
   })
 
-  // Optionally handle 401 Unauthorized globally here
   if (response.status === 401) {
-    localStorage.removeItem("logitrack_token")
-    if (
-      window.location.pathname !== "/login" &&
-      window.location.pathname !== "/"
-    ) {
-      window.location.href = "/" // Redirect to login
+    removeToken()
+    if (window.location.pathname !== "/") {
+      window.location.href = "/"
     }
   }
 
