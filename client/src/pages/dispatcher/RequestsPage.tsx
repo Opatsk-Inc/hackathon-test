@@ -1,8 +1,17 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useRequests } from "@/features/requests"
 import { useOrders } from "@/features/orders"
 import type { IOrder } from "@/shared/types"
-import { Inbox, ArrowRight, Clock, Package, Contact } from "lucide-react"
+import {
+  Inbox,
+  ArrowRight,
+  Clock,
+  Package,
+  Contact,
+  Copy,
+  ExternalLink,
+  Check,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +36,40 @@ export default function RequestsPage() {
 
   const [approveOrderId, setApproveOrderId] = useState<string | null>(null)
   const [driverName, setDriverName] = useState("")
+  const [magicLinkData, setMagicLinkData] = useState<{ link: string } | null>(
+    null
+  )
+  const [copySuccess, setCopySuccess] = useState(false)
+
+  const copyToClipboard = useCallback(async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text)
+        setCopySuccess(true)
+        setTimeout(() => setCopySuccess(false), 2000)
+        return true
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea")
+        textArea.value = text
+        textArea.style.position = "fixed"
+        textArea.style.left = "-999999px"
+        textArea.style.top = "-999999px"
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        const result = document.execCommand("copy")
+        textArea.remove()
+        if (result) {
+          setCopySuccess(true)
+          setTimeout(() => setCopySuccess(false), 2000)
+        }
+        return result
+      }
+    } catch {
+      return false
+    }
+  }, [])
 
   const handleApproveSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,9 +77,13 @@ export default function RequestsPage() {
     approveOrder(
       { orderId: approveOrderId, payload: { driverName } },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          const { trip } = response
+          const fullUrl = `${window.location.origin}/driver/${trip.magicToken}`
+          setMagicLinkData({ link: fullUrl })
           setApproveOrderId(null)
           setDriverName("")
+          setCopySuccess(false)
         },
       }
     )
@@ -193,6 +240,77 @@ export default function RequestsPage() {
                 </Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Magic Link Success Dialog */}
+        <Dialog
+          open={!!magicLinkData}
+          onOpenChange={(open) => {
+            if (!open) {
+              setMagicLinkData(null)
+              setCopySuccess(false)
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                Посилання для водія створено
+              </DialogTitle>
+              <DialogDescription>
+                Скопіюйте посилання та надішліть водію для початку доставки
+              </DialogDescription>
+            </DialogHeader>
+            {magicLinkData && (
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={magicLinkData.link}
+                    className="flex-1 font-mono text-sm"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => copyToClipboard(magicLinkData.link)}
+                    disabled={copySuccess}
+                  >
+                    {copySuccess ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {copySuccess && (
+                  <p className="text-sm text-green-600">
+                    Посилання скопійовано!
+                  </p>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMagicLinkData(null)}
+              >
+                Закрити
+              </Button>
+              {magicLinkData && (
+                <Button
+                  type="button"
+                  onClick={() => window.open(magicLinkData.link, "_blank")}
+                  className="gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Відкрити посилання
+                </Button>
+              )}
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

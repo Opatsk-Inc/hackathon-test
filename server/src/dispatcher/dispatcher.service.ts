@@ -135,9 +135,11 @@ export class DispatcherService {
   async getActiveTrips() {
     return this.prisma.trip.findMany({
       where: {
-        status: { in: ['EN_ROUTE', 'SOS'] },
+        status: { in: ['PENDING', 'EN_ROUTE', 'SOS'] },
       },
-      include: { order: { include: { resource: true, requester: true, provider: true } } },
+      include: {
+        order: { include: { resource: true, requester: true, provider: true } },
+      },
     });
   }
 

@@ -90,8 +90,10 @@ export class DriverService {
   async reportSos(magicToken: string) {
     const trip = await this.getTripByToken(magicToken);
 
-    if (trip.status !== 'EN_ROUTE') {
-      throw new BadRequestException('Trip must be EN_ROUTE to report SOS');
+    if (trip.status !== 'EN_ROUTE' && trip.status !== 'PENDING') {
+      throw new BadRequestException(
+        'Trip must be EN_ROUTE or PENDING to report SOS',
+      );
     }
 
     return this.prisma.trip.update({
