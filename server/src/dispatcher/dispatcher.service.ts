@@ -12,7 +12,13 @@ export class DispatcherService {
 
   async getAllWarehouses() {
     return this.prisma.warehouse.findMany({
-      include: { users: { select: { id: true, email: true, firstName: true, lastName: true } } },
+      include: {
+        inventory: {
+          include: {
+            resource: true,
+          },
+        },
+      },
     });
   }
 
