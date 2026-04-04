@@ -15,8 +15,8 @@ model User {
   id               Int       @id @default(autoincrement())
   email            String    @unique
   passwordHash     String
-  firstName        String
-  lastName         String
+  firstName        String?
+  lastName         String?
   role             Role      @default(WAREHOUSE_MANAGER)
   registrationDate DateTime  @default(dbgenerated("timezone('UTC'::text, now())")) @db.Timestamp(6)
 

@@ -9,11 +9,11 @@ export class UserResponse {
   @ApiProperty({ description: 'User email address' })
   email: string;
 
-  @ApiProperty({ description: 'First name' })
-  firstName: string;
+  @ApiProperty({ description: 'First name', nullable: true, required: false })
+  firstName: string | null;
 
-  @ApiProperty({ description: 'Last name' })
-  lastName: string;
+  @ApiProperty({ description: 'Last name', nullable: true, required: false })
+  lastName: string | null;
 
   @ApiProperty({ enum: Role, description: 'User role' })
   role: Role;
