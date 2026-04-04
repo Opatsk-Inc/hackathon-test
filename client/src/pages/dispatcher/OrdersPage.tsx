@@ -1,6 +1,5 @@
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { api } from "@/lib/api"
+import { useOrders } from "@/features/orders"
+import type { IOrder } from "@/shared/types"
 import { ListOrdered, Search, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -20,67 +19,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  formatOrderStatus,
+  getOrderStatusVariant,
+  formatPriorityLevel,
+  getPriorityVariant,
+} from "@/features/orders/utils/order.formatters"
+import { formatDate } from "@/shared/utils/formatDate"
 
 export default function OrdersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [urgencyFilter, setUrgencyFilter] = useState("all")
+  const {
+    orders,
+    isLoading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    urgencyFilter,
+    setUrgencyFilter,
+  } = useOrders()
 
-  const { data: orders = [], isLoading } = useQuery({
-    queryKey: ["orders"],
-    queryFn: api.getOrders,
-  })
-
-  // Filter functionality
-  const filteredOrders = orders.filter((o: any) => {
-    // Search query match
-    const q = searchQuery.toLowerCase()
-    const matchesSearch = 
-      o.id.toLowerCase().includes(q) || 
-      (o.resource?.name || "").toLowerCase().includes(q) ||
-      (o.provider?.name || "").toLowerCase().includes(q) ||
-      (o.requester?.name || "").toLowerCase().includes(q)
-
-    // Status filter match
-    const matchesStatus = statusFilter === "all" || o.status.toLowerCase() === statusFilter
-
-    // Urgency match
-    const matchesUrgency = urgencyFilter === "all" || o.priority.toLowerCase() === urgencyFilter
-
-    return matchesSearch && matchesStatus && matchesUrgency
-  })
-
-  const getStatusLabel = (status: string) => {
-    const s = status.toLowerCase()
-    if (s === "pending") return "Очікує"
-    if (s === "approved") return "Затверджено"
-    if (s === "packed") return "Запаковано"
-    if (s === "in_transit") return "В дорозі"
-    if (s === "delivered") return "Доставлено"
-    if (s === "cancelled") return "Скасовано"
-    return status
-  }
-
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" | "pending" | "in_transit" | "delivered" => {
-    const s = status.toLowerCase()
-    if (s === "pending") return "pending"
-    if (s === "in_transit") return "in_transit"
-    if (s === "delivered") return "delivered"
-    if (s === "cancelled" || s === "sos") return "destructive"
-    return "outline"
-  }
-
-  const getUrgencyLabel = (priority: string) => {
-    const p = priority.toLowerCase()
-    if (p === "normal") return "Звичайний"
-    if (p === "high") return "Високий"
-    if (p === "critical") return "Критичний"
-    return priority
+  if (error) {
+    return (
+      <div className="p-4 text-destructive">
+        Помилка завантаження даних: {(error as Error).message}
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="flex flex-col gap-6">
+      <div className="mb-2 flex items-center gap-2">
         <ListOrdered className="h-6 w-6 text-foreground" />
         <h1 className="text-2xl font-bold">Усі замовлення</h1>
       </div>
@@ -88,7 +58,7 @@ export default function OrdersPage() {
       {/* Фільтри */}
       <div className="flex flex-wrap gap-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Пошук по ID, вантажу, складу..."
             className="w-64 bg-card pl-9"
@@ -135,45 +105,74 @@ export default function OrdersPage() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="w-28 text-xs uppercase px-4">ID</TableHead>
+                <TableHead className="w-28 px-4 text-xs uppercase">
+                  ID
+                </TableHead>
                 <TableHead className="text-xs uppercase">Статус</TableHead>
                 <TableHead className="text-xs uppercase">Звідки</TableHead>
                 <TableHead className="text-xs uppercase">Куди</TableHead>
                 <TableHead className="text-xs uppercase">Вантаж</TableHead>
-                <TableHead className="text-xs uppercase">Терміновість</TableHead>
+                <TableHead className="text-xs uppercase">
+                  Терміновість
+                </TableHead>
                 <TableHead className="text-xs uppercase">Водій</TableHead>
-                <TableHead className="text-right text-xs uppercase px-4">Створено</TableHead>
+                <TableHead className="px-4 text-right text-xs uppercase">
+                  Створено
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="text-sm">
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Завантаження...</TableCell>
+                  <TableCell
+                    colSpan={8}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Завантаження...
+                  </TableCell>
                 </TableRow>
-              ) : filteredOrders.length === 0 ? (
+              ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Нічого не знайдено</TableCell>
+                  <TableCell
+                    colSpan={8}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Нічого не знайдено
+                  </TableCell>
                 </TableRow>
               ) : (
-                filteredOrders.map((o: any) => (
+                orders.map((o: IOrder) => (
                   <TableRow key={o.id}>
-                    <TableCell className="font-medium font-mono text-xs px-4 text-foreground">{o.id.split('-')[0].toUpperCase()}</TableCell>
+                    <TableCell className="px-4 font-mono text-xs font-medium text-foreground">
+                      {o.id.split("-")[0].toUpperCase()}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(o.status) as any}>
-                        {getStatusLabel(o.status)}
+                      <Badge variant={getOrderStatusVariant(o.status)}>
+                        {formatOrderStatus(o.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{o.provider?.name || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{o.requester?.name || "—"}</TableCell>
-                    <TableCell className="font-medium text-foreground">{o.resource?.name} <span className="text-muted-foreground font-mono ml-2">{o.quantity} од.</span></TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {o.provider?.name || "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {o.requester?.name || "—"}
+                    </TableCell>
+                    <TableCell className="font-medium text-foreground">
+                      {o.resource?.name}{" "}
+                      <span className="ml-2 font-mono text-muted-foreground">
+                        {o.quantity} од.
+                      </span>
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={o.priority.toLowerCase() as any}>
-                        {getUrgencyLabel(o.priority)}
+                      <Badge variant={getPriorityVariant(o.priority)}>
+                        {formatPriorityLevel(o.priority)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{o.trip?.driverName || "—"}</TableCell>
-                    <TableCell className="text-right text-muted-foreground px-4">
-                      {new Date(o.createdAt).toLocaleDateString("uk-UA")}
+                    <TableCell className="text-muted-foreground">
+                      {o.trip?.driverName || "—"}
+                    </TableCell>
+                    <TableCell className="px-4 text-right text-muted-foreground">
+                      {formatDate(o.createdAt)}
                     </TableCell>
                   </TableRow>
                 ))

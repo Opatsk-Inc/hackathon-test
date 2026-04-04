@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import DispatcherLayout from "@/components/DispatcherLayout"
+import DispatcherLayout from "@/features/dispatcher-layout/components/DispatcherLayout"
 import DashboardPage from "@/pages/dispatcher/DashboardPage"
 import OrdersPage from "@/pages/dispatcher/OrdersPage"
 import WarehousesPage from "@/pages/dispatcher/WarehousesPage"

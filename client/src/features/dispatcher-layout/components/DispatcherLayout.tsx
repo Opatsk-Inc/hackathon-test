@@ -10,16 +10,15 @@ import {
   Inbox,
   Truck,
 } from "lucide-react"
-import { NAV_ITEMS } from "@/lib/constants"
-import Logo from "./Logo"
-import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
-
-interface NavItem {
-  to: string
-  label: string
-  icon: string
-}
+import { NAV_ITEMS, type NavItem } from "../constants/navItems"
+import Logo from "@/components/Logo"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,

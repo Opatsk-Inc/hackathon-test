@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "@/lib/api"
+import { useRequests } from "@/features/requests"
+import { useOrders } from "@/features/orders"
+import type { IOrder } from "@/shared/types"
 import { Inbox, ArrowRight, Clock, Package, Contact } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -14,41 +15,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  formatPriorityLevel,
+  getPriorityVariant,
+} from "@/features/orders/utils/order.formatters"
 
 export default function RequestsPage() {
-  const queryClient = useQueryClient()
-  
+  const { requests: pendingOrders, isLoading, error } = useRequests()
+  const { approveOrder, isApproving, approveOrderError } = useOrders()
+
   const [approveOrderId, setApproveOrderId] = useState<string | null>(null)
   const [driverName, setDriverName] = useState("")
 
-  const { data: orders = [], isLoading } = useQuery({
-    queryKey: ["orders"],
-    queryFn: api.getOrders,
-  })
-
-  const approveMutation = useMutation({
-    mutationFn: (vars: { orderId: string; payload: { driverName: string } }) =>
-      api.approveOrder(vars.orderId, vars.payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] })
-      setApproveOrderId(null)
-      setDriverName("")
-    },
-  })
-
-  const pendingOrders = orders.filter((o: any) => o.status === "PENDING")
-
   const handleApproveSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!approveOrderId || !driverName) return
-    approveMutation.mutate({ orderId: approveOrderId, payload: { driverName } })
+    if (!approveOrderId || !driverName.trim()) return
+    approveOrder(
+      { orderId: approveOrderId, payload: { driverName } },
+      {
+        onSuccess: () => {
+          setApproveOrderId(null)
+          setDriverName("")
+        },
+      }
+    )
   }
 
-  const getUrgencyLabel = (priority: string) => {
-    const p = priority.toLowerCase()
-    if (p === "critical") return "Критичний"
-    if (p === "high") return "Високий"
-    return "Звичайний"
+  if (error) {
+    return (
+      <div className="p-4 text-destructive">
+        Помилка завантаження даних: {(error as Error).message}
+      </div>
+    )
   }
 
   return (
@@ -58,74 +56,89 @@ export default function RequestsPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
             <Inbox className="h-5 w-5 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold font-sans text-foreground">Вхідні запити</h1>
+          <h1 className="font-sans text-2xl font-bold text-foreground">
+            Вхідні запити
+          </h1>
         </div>
-        <p className="text-muted-foreground ml-12">Запити від інших складів на переміщення ресурсів</p>
+        <p className="ml-12 text-muted-foreground">
+          Запити від інших складів на переміщення ресурсів
+        </p>
       </div>
 
       <div className="flex flex-col gap-3">
         {isLoading ? (
-          <Card className="border-dashed shadow-none bg-muted/20">
+          <Card className="border-dashed bg-muted/20 shadow-none">
             <CardContent className="flex justify-center p-8 text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 animate-spin" /> Завантаження запитів...
+                <Clock className="h-4 w-4 animate-spin" /> Завантаження
+                запитів...
               </div>
             </CardContent>
           </Card>
         ) : pendingOrders.length === 0 ? (
-          <Card className="border-dashed shadow-none bg-muted/20">
-            <CardContent className="flex flex-col items-center justify-center p-12 text-muted-foreground gap-3">
+          <Card className="border-dashed bg-muted/20 shadow-none">
+            <CardContent className="flex flex-col items-center justify-center gap-3 p-12 text-muted-foreground">
               <Inbox className="h-10 w-10 opacity-20" />
               <p>Немає нових запитів на даний момент.</p>
             </CardContent>
           </Card>
         ) : (
-          pendingOrders.map((r: any) => (
+          pendingOrders.map((r: IOrder) => (
             <Card key={r.id} className="transition-all hover:bg-muted/30">
-              <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardContent className="flex flex-col justify-between gap-4 p-4 md:flex-row md:items-center">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold bg-muted px-2 py-0.5 rounded text-foreground">
-                      {r.id.split('-')[0].toUpperCase()}
+                    <span className="rounded bg-muted px-2 py-0.5 font-mono text-sm font-bold text-foreground">
+                      {r.id.split("-")[0].toUpperCase()}
                     </span>
-                    <Badge variant={r.priority.toLowerCase() as any}>
-                      {getUrgencyLabel(r.priority)}
+                    <Badge variant={getPriorityVariant(r.priority)}>
+                      {formatPriorityLevel(r.priority)}
                     </Badge>
                     <Badge variant="pending">Новий Запит</Badge>
                   </div>
-                  
-                  <div className="flex items-center gap-3 text-base font-medium mt-1">
-                    <span className="text-muted-foreground border-b border-dashed border-border pb-0.5">Система (Очікування)</span>
+
+                  <div className="mt-1 flex items-center gap-3 text-base font-medium">
+                    <span className="border-b border-dashed border-border pb-0.5 text-muted-foreground">
+                      Система (Очікування)
+                    </span>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground border-b border-dashed border-border pb-0.5">{r.requester?.name || "Невідомо"}</span>
+                    <span className="border-b border-dashed border-border pb-0.5 text-foreground">
+                      {r.requester?.name || "Невідомо"}
+                    </span>
                   </div>
-                  
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-muted-foreground">
+
+                  <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">{r.resource?.name}</span>
-                      <span className="text-muted-foreground px-1">·</span>
-                      <span className="font-mono text-foreground">{r.quantity} од.</span>
+                      <span className="font-medium text-foreground">
+                        {r.resource?.name}
+                      </span>
+                      <span className="px-1 text-muted-foreground">·</span>
+                      <span className="font-mono text-foreground">
+                        {r.quantity} од.
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{new Date(r.createdAt).toLocaleString("uk-UA")}</span>
+                      <span>
+                        {new Date(r.createdAt).toLocaleString("uk-UA")}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex md:flex-col gap-2 shrink-0 border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
+                <div className="flex shrink-0 gap-2 border-t border-border pt-3 md:flex-col md:border-t-0 md:border-l md:pt-0 md:pl-4">
                   <Button
                     size="sm"
                     onClick={() => setApproveOrderId(r.id)}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Прийняти
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
                   >
                     Відхилити
                   </Button>
@@ -136,7 +149,10 @@ export default function RequestsPage() {
         )}
       </div>
 
-      <Dialog open={!!approveOrderId} onOpenChange={(open) => !open && setApproveOrderId(null)}>
+      <Dialog
+        open={!!approveOrderId}
+        onOpenChange={(open) => !open && setApproveOrderId(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -144,7 +160,8 @@ export default function RequestsPage() {
               Призначити водія
             </DialogTitle>
             <DialogDescription>
-              Введіть ім'я водія, який буде здійснювати цю доставку, щоб створити поїздку.
+              Введіть ім'я водія, який буде здійснювати цю доставку, щоб
+              створити поїздку.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleApproveSubmit}>
@@ -158,15 +175,28 @@ export default function RequestsPage() {
                   className="col-span-3"
                   autoFocus
                   required
+                  disabled={isApproving}
                 />
+                {approveOrderError && (
+                  <p className="text-sm text-destructive">
+                    {approveOrderError instanceof Error
+                      ? approveOrderError.message
+                      : String(approveOrderError)}
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setApproveOrderId(null)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setApproveOrderId(null)}
+                disabled={isApproving}
+              >
                 Скасувати
               </Button>
-              <Button type="submit" disabled={approveMutation.isPending}>
-                {approveMutation.isPending ? "Обробка..." : "Прийняти замовлення"}
+              <Button type="submit" disabled={isApproving}>
+                {isApproving ? "Обробка..." : "Прийняти замовлення"}
               </Button>
             </DialogFooter>
           </form>
