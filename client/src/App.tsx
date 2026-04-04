@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import RequireAuth from "@/components/RequireAuth"
 import DispatcherLayout from "@/features/dispatcher-layout/components/DispatcherLayout"
 import DashboardPage from "@/pages/dispatcher/DashboardPage"
@@ -31,7 +31,10 @@ export function App() {
         <Route element={<RequireAuth allowedRoles={["WAREHOUSE_MANAGER"]} />}>
           <Route path="manager" element={<ManagerLayout />}>
             <Route index element={<ManagerResourcesPage />} />
-            <Route index element={<ManagerResourcesPage />} />
+            <Route
+              path="resources"
+              element={<Navigate to="/manager" replace />}
+            />
             <Route path="orders" element={<ManagerOrdersPage />} />
             <Route path="replenish" element={<ManagerReplenishPage />} />
             <Route path="inventory" element={<ManagerInventoryPage />} />

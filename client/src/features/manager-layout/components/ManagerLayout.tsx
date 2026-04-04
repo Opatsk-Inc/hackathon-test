@@ -64,11 +64,22 @@ export default function ManagerLayout() {
             )
           })}
         </div>
+
+        <div className="mt-auto border-t border-border px-3 pt-3">
+          <Button
+            variant="ghost"
+            onClick={() => setSettingsOpen(true)}
+            className="w-full justify-start gap-2 px-3 py-2.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          >
+            <Settings className="h-4 w-4" />
+            Налаштування
+          </Button>
+        </div>
       </nav>
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto bg-background p-4 pb-20 sm:p-6">
-        <header className="mb-4 flex items-center justify-end sm:mb-6">
+        <header className="mb-4 flex items-center justify-end sm:mb-6 sm:hidden">
           <Button
             variant="ghost"
             onClick={() => setSettingsOpen(true)}
