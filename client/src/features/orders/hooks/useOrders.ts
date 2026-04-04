@@ -53,6 +53,30 @@ export function useOrders() {
     },
   })
 
+  // Expose the mutation for component-level success handling
+  const approveOrder = (
+    params: { orderId: string; payload: { driverName: string } },
+    options?: { onSuccess?: (response: IApproveOrderResponse) => void }
+  ) => {
+    return approveOrderMutation.mutate(params, {
+      onSuccess: (response) => {
+        const updatedOrder = response.order
+
+        queryClient.setQueryData<IOrder[]>(
+          ["orders"],
+          (old) =>
+            old?.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)) ?? []
+        )
+
+        queryClient.invalidateQueries({ queryKey: ["activeTrips"] })
+        queryClient.invalidateQueries({ queryKey: ["requests"] })
+
+        // Call component-level success callback if provided
+        options?.onSuccess?.(response)
+      },
+    })
+  }
+
   // Filter functionality
   const filteredOrders = orders.filter((o: IOrder) => {
     // Search query match
@@ -84,7 +108,7 @@ export function useOrders() {
     urgencyFilter,
     setUrgencyFilter,
     refetch,
-    approveOrder: approveOrderMutation.mutate,
+    approveOrder,
     isApproving: approveOrderMutation.isPending,
     approveOrderError: approveOrderMutation.error,
   }

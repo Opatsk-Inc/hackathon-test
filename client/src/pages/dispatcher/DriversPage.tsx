@@ -1,11 +1,25 @@
 import { useState } from "react"
 import { useDrivers } from "@/features/drivers"
 import type { IActiveTrip } from "@/features/trips/types/trip.types"
-import { Search, Filter, ShieldAlert, Link as LinkIcon } from "lucide-react"
+import {
+  Search,
+  Filter,
+  ShieldAlert,
+  Link as LinkIcon,
+  Copy,
+  Check,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { PageLoader } from "@/components/ui/loaders"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Table,
   TableBody,
@@ -26,15 +40,30 @@ export default function DriversPage() {
   } = useDrivers()
 
   const [searchQuery, setSearchQuery] = useState("")
+  const [copiedTripId, setCopiedTripId] = useState<string | null>(null)
+  const [fallbackTrip, setFallbackTrip] = useState<IActiveTrip | null>(null)
 
   const handleSos = (tripId: string) => {
     resolveSos(tripId)
   }
 
-  const copyMagicLink = (magicToken: string) => {
-    navigator.clipboard.writeText(
-      `${window.location.origin}/driver/${magicToken}`
-    )
+  const copyMagicLink = async (tripId: string, magicToken: string) => {
+    const url = `${window.location.origin}/driver/${magicToken}`
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url)
+        setCopiedTripId(tripId)
+        setTimeout(() => setCopiedTripId(null), 2000)
+      } else {
+        throw new Error("Clipboard API not available")
+      }
+    } catch {
+      // Fallback: show dialog with manual copy option
+      const trip = trips.find((t: IActiveTrip) => t.id === tripId)
+      if (trip) {
+        setFallbackTrip(trip)
+      }
+    }
   }
 
   const filteredTrips = trips.filter((trip: IActiveTrip) => {
@@ -131,6 +160,7 @@ export default function DriversPage() {
               ) : (
                 filteredTrips.map((trip: IActiveTrip) => {
                   const isSos = trip.status === "SOS"
+                  const isPending = trip.status === "PENDING"
 
                   return (
                     <TableRow
@@ -156,6 +186,8 @@ export default function DriversPage() {
                       <TableCell>
                         {isSos ? (
                           <Badge variant="sos">SOS ERROR</Badge>
+                        ) : isPending ? (
+                          <Badge variant="outline">Очікує старт</Badge>
                         ) : (
                           <Badge variant="in_transit">У рейсі</Badge>
                         )}
@@ -178,10 +210,21 @@ export default function DriversPage() {
                             variant="outline"
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => copyMagicLink(trip.magicToken)}
+                            onClick={() =>
+                              copyMagicLink(trip.id, trip.magicToken)
+                            }
                           >
-                            <LinkIcon className="h-3 w-3" />
-                            Copy Magic Link
+                            {copiedTripId === trip.id ? (
+                              <>
+                                <Check className="h-3 w-3 text-green-600" />
+                                <span>Скопійовано!</span>
+                              </>
+                            ) : (
+                              <>
+                                <LinkIcon className="h-3 w-3" />
+                                Copy Magic Link
+                              </>
+                            )}
                           </Button>
                         )}
                       </TableCell>
@@ -192,6 +235,49 @@ export default function DriversPage() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Clipboard Fallback Dialog */}
+        <Dialog
+          open={!!fallbackTrip}
+          onOpenChange={(open) => {
+            if (!open) setFallbackTrip(null)
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Скопіювати посилання вручну</DialogTitle>
+              <DialogDescription>
+                Будь ласка, скопіюйте посилання для водія вручну
+              </DialogDescription>
+            </DialogHeader>
+            {fallbackTrip && (
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={`${window.location.origin}/driver/${fallbackTrip.magicToken}`}
+                  className="flex-1 font-mono text-sm"
+                />
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => {
+                    const url = `${window.location.origin}/driver/${fallbackTrip.magicToken}`
+                    navigator.clipboard
+                      .writeText(url)
+                      .then(() => {
+                        setFallbackTrip(null)
+                      })
+                      .catch(() => {
+                        setFallbackTrip(null)
+                      })
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </PageLoader>
   )

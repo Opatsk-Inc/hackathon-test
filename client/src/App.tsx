@@ -12,6 +12,7 @@ import ManagerResourcesPage from "@/pages/manager/ResourcesPage"
 import ManagerOrdersPage from "@/pages/manager/OrdersPage"
 import ManagerReplenishPage from "@/pages/manager/ReplenishPage"
 import ManagerInventoryPage from "@/pages/manager/InventoryPage"
+import DriverPage from "@/pages/driver/DriverPage"
 
 export function App() {
   return (
@@ -36,6 +37,7 @@ export function App() {
             <Route path="inventory" element={<ManagerInventoryPage />} />
           </Route>
         </Route>
+        <Route path="driver/:magicToken" element={<DriverPage />} />
       </Routes>
     </BrowserRouter>
   )
