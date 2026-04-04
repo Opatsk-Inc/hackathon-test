@@ -1,5 +1,10 @@
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
+import { ListOrdered, Search, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -16,43 +21,104 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const MOCK_ORDERS = [
-  { id: "ORD-001", status: "in_transit", from: "Склад Київ-А", to: "Хаб Львів", cargo: "Електроніка — 240 шт", urgency: "critical", driver: "О. Коваленко", createdAt: "2026-04-01" },
-  { id: "ORD-002", status: "pending", from: "Депо Одеса", to: "Склад Київ-Б", cargo: "Медикаменти — 80 коробок", urgency: "high", driver: "", createdAt: "2026-04-02" },
-  { id: "ORD-003", status: "picked_up", from: "Завод Дніпро", to: "Точка Харків", cargo: "Меблі — 12 палет", urgency: "normal", driver: "І. Бондаренко", createdAt: "2026-04-02" },
-  { id: "ORD-004", status: "in_transit", from: "Порт Миколаїв", to: "Холодильник Київ", cargo: "Заморожені — 5 рефрижераторів", urgency: "high", driver: "М. Шевченко", createdAt: "2026-04-03" },
-  { id: "ORD-005", status: "delivered", from: "Склад Київ-А", to: "Точка Вінниця", cargo: "Одяг — 320 шт", urgency: "normal", driver: "Т. Мельник", createdAt: "2026-03-30" },
-  { id: "ORD-006", status: "pending", from: "Депо Запоріжжя", to: "Склад Київ-А", cargo: "Сировина — 18 тонн", urgency: "critical", driver: "", createdAt: "2026-04-03" },
-  { id: "ORD-007", status: "in_transit", from: "Хаб Львів", to: "Точка Івано-Франківськ", cargo: "FMCG — 150 коробок", urgency: "normal", driver: "А. Лисенко", createdAt: "2026-04-03" },
-  { id: "ORD-008", status: "delivered", from: "Завод Дніпро", to: "Склад Київ-А", cargo: "Запчастини — 45 ящиків", urgency: "normal", driver: "В. Ткачук", createdAt: "2026-03-28" },
-]
-
 export default function OrdersPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [urgencyFilter, setUrgencyFilter] = useState("all")
+
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["orders"],
+    queryFn: api.getOrders,
+  })
+
+  // Filter functionality
+  const filteredOrders = orders.filter((o: any) => {
+    // Search query match
+    const q = searchQuery.toLowerCase()
+    const matchesSearch = 
+      o.id.toLowerCase().includes(q) || 
+      (o.resource?.name || "").toLowerCase().includes(q) ||
+      (o.provider?.name || "").toLowerCase().includes(q) ||
+      (o.requester?.name || "").toLowerCase().includes(q)
+
+    // Status filter match
+    const matchesStatus = statusFilter === "all" || o.status.toLowerCase() === statusFilter
+
+    // Urgency match
+    const matchesUrgency = urgencyFilter === "all" || o.priority.toLowerCase() === urgencyFilter
+
+    return matchesSearch && matchesStatus && matchesUrgency
+  })
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase()
+    if (s === "pending") return "Очікує"
+    if (s === "approved") return "Затверджено"
+    if (s === "packed") return "Запаковано"
+    if (s === "in_transit") return "В дорозі"
+    if (s === "delivered") return "Доставлено"
+    if (s === "cancelled") return "Скасовано"
+    return status
+  }
+
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" | "pending" | "in_transit" | "delivered" => {
+    const s = status.toLowerCase()
+    if (s === "pending") return "pending"
+    if (s === "in_transit") return "in_transit"
+    if (s === "delivered") return "delivered"
+    if (s === "cancelled" || s === "sos") return "destructive"
+    return "outline"
+  }
+
+  const getUrgencyLabel = (priority: string) => {
+    const p = priority.toLowerCase()
+    if (p === "normal") return "Звичайний"
+    if (p === "high") return "Високий"
+    if (p === "critical") return "Критичний"
+    return priority
+  }
+
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Усі замовлення</h1>
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-2 mb-2">
+        <ListOrdered className="h-6 w-6 text-foreground" />
+        <h1 className="text-2xl font-bold">Усі замовлення</h1>
+      </div>
 
       {/* Фільтри */}
-      <div className="flex flex-wrap gap-2">
-        <Input
-          placeholder="Пошук по ID, вантажу..."
-          className="w-64"
-        />
-        <Select>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Всі статуси" />
+      <div className="flex flex-wrap gap-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Пошук по ID, вантажу, складу..."
+            className="w-64 bg-card pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-48 bg-card">
+            <div className="flex items-center gap-2">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="Всі статуси" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всі статуси</SelectItem>
             <SelectItem value="pending">Очікує</SelectItem>
-            <SelectItem value="picked_up">Забрано</SelectItem>
+            <SelectItem value="approved">Затверджено</SelectItem>
+            <SelectItem value="packed">Запаковано</SelectItem>
             <SelectItem value="in_transit">В дорозі</SelectItem>
             <SelectItem value="delivered">Доставлено</SelectItem>
+            <SelectItem value="cancelled">Скасовано</SelectItem>
           </SelectContent>
         </Select>
-        <Select>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Всі терміновості" />
+        <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+          <SelectTrigger className="w-48 bg-card">
+            <div className="flex items-center gap-2">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="Всі терміновості" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Всі терміновості</SelectItem>
@@ -64,47 +130,58 @@ export default function OrdersPage() {
       </div>
 
       {/* Таблиця */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-24">ID</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Звідки</TableHead>
-              <TableHead>Куди</TableHead>
-              <TableHead>Вантаж</TableHead>
-              <TableHead>Терміновість</TableHead>
-              <TableHead>Водій</TableHead>
-              <TableHead className="text-right">Створено</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {MOCK_ORDERS.map((o) => (
-              <TableRow key={o.id}>
-                <TableCell className="font-medium">{o.id}</TableCell>
-                <TableCell>
-                  <Badge variant={o.status as any}>
-                    {o.status === "pending" ? "Очікує" : 
-                     o.status === "picked_up" ? "Забрано" : 
-                     o.status === "in_transit" ? "В дорозі" : "Доставлено"}
-                  </Badge>
-                </TableCell>
-                <TableCell>{o.from}</TableCell>
-                <TableCell>{o.to}</TableCell>
-                <TableCell>{o.cargo}</TableCell>
-                <TableCell>
-                  <Badge variant={o.urgency as any}>
-                    {o.urgency === "normal" ? "Звичайний" : 
-                     o.urgency === "high" ? "Високий" : "Критичний"}
-                  </Badge>
-                </TableCell>
-                <TableCell>{o.driver || "—"}</TableCell>
-                <TableCell className="text-right">{o.createdAt}</TableCell>
+      <Card className="shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-28 text-xs uppercase px-4">ID</TableHead>
+                <TableHead className="text-xs uppercase">Статус</TableHead>
+                <TableHead className="text-xs uppercase">Звідки</TableHead>
+                <TableHead className="text-xs uppercase">Куди</TableHead>
+                <TableHead className="text-xs uppercase">Вантаж</TableHead>
+                <TableHead className="text-xs uppercase">Терміновість</TableHead>
+                <TableHead className="text-xs uppercase">Водій</TableHead>
+                <TableHead className="text-right text-xs uppercase px-4">Створено</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody className="text-sm">
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Завантаження...</TableCell>
+                </TableRow>
+              ) : filteredOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Нічого не знайдено</TableCell>
+                </TableRow>
+              ) : (
+                filteredOrders.map((o: any) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-medium font-mono text-xs px-4 text-foreground">{o.id.split('-')[0].toUpperCase()}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(o.status) as any}>
+                        {getStatusLabel(o.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{o.provider?.name || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{o.requester?.name || "—"}</TableCell>
+                    <TableCell className="font-medium text-foreground">{o.resource?.name} <span className="text-muted-foreground font-mono ml-2">{o.quantity} од.</span></TableCell>
+                    <TableCell>
+                      <Badge variant={o.priority.toLowerCase() as any}>
+                        {getUrgencyLabel(o.priority)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{o.trip?.driverName || "—"}</TableCell>
+                    <TableCell className="text-right text-muted-foreground px-4">
+                      {new Date(o.createdAt).toLocaleDateString("uk-UA")}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }

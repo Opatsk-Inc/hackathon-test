@@ -1,3 +1,12 @@
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
+import { Warehouse, PackageOpen, Boxes } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -7,109 +16,89 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const MOCK_WAREHOUSES = [
-  {
-    id: "WH-001",
-    name: "Склад Київ-А",
-    address: "вул. Промислова, 12, Київ",
-    occupancy: 78,
-    freeSlots: 44,
-    activeShipments: 5,
-    resources: [
-      { name: "Електроніка", quantity: 1200, unit: "шт" },
-      { name: "Медикаменти", quantity: 340, unit: "коробок" },
-      { name: "Одяг", quantity: 890, unit: "шт" },
-    ],
-  },
-  {
-    id: "WH-002",
-    name: "Склад Київ-Б",
-    address: "вул. Логістична, 5, Київ",
-    occupancy: 45,
-    freeSlots: 110,
-    activeShipments: 2,
-    resources: [
-      { name: "Сировина", quantity: 50, unit: "тонн" },
-      { name: "Запчастини", quantity: 620, unit: "ящиків" },
-    ],
-  },
-  {
-    id: "WH-003",
-    name: "Хаб Львів",
-    address: "вул. Стрийська, 98, Львів",
-    occupancy: 62,
-    freeSlots: 76,
-    activeShipments: 3,
-    resources: [
-      { name: "FMCG", quantity: 2400, unit: "коробок" },
-      { name: "Меблі", quantity: 85, unit: "палет" },
-    ],
-  },
-  {
-    id: "WH-004",
-    name: "Депо Одеса",
-    address: "вул. Портова, 22, Одеса",
-    occupancy: 91,
-    freeSlots: 18,
-    activeShipments: 7,
-    resources: [
-      { name: "Заморожені продукти", quantity: 160, unit: "рефрижераторів" },
-      { name: "Зерно", quantity: 300, unit: "тонн" },
-      { name: "Медикаменти", quantity: 120, unit: "коробок" },
-    ],
-  },
-]
-
 export default function WarehousesPage() {
+  const { data: warehouses, isLoading, error } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: api.getWarehouses,
+  })
+
+  if (isLoading) {
+    return <div className="p-4 flex items-center gap-2 text-muted-foreground"><Warehouse className="h-5 w-5 animate-pulse" /> Завантаження складів...</div>
+  }
+
+  if (error) {
+    return <div className="p-4 flex items-center gap-2 text-destructive"><Boxes className="h-5 w-5" /> Помилка завантаження даних.</div>
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Склади та ресурси</h1>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <Warehouse className="h-6 w-6 text-foreground" />
+        <h1 className="text-2xl font-bold text-foreground">Склади та ресурси</h1>
+      </div>
 
-      <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
-        {MOCK_WAREHOUSES.map((w) => (
-          <div
-            key={w.id}
-            className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700 bg-white dark:bg-zinc-900/50"
-          >
-            <h3 className="text-lg font-semibold">{w.name}</h3>
-            <p className="mb-3 text-[13px] text-zinc-400">{w.address}</p>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+        {warehouses?.map((w: any) => {
+          const totalItems = w.inventory?.reduce((acc: number, inv: any) => acc + inv.quantityAvailable, 0) || 0
+          
+          return (
+            <Card key={w.id} className="bg-card">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+                  <PackageOpen className="h-5 w-5 text-muted-foreground" />
+                  {w.name}
+                </CardTitle>
+                <div className="text-sm text-muted-foreground font-normal">{w.address}</div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="mb-4 text-sm space-y-2">
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>Загалом одиниць товару</span>
+                    <strong className="text-foreground">{totalItems}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>Зарезервовано товарів</span>
+                    <strong className="text-foreground">{w.inventory?.reduce((acc: number, inv: any) => acc + inv.quantityReserved, 0) || 0}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>Активних відправок</span>
+                    <strong className="text-foreground">{w.ordersOut ? w.ordersOut.length : 0}</strong>
+                  </div>
+                </div>
 
-            <div className="mb-3 text-[13px]">
-              <div className="flex justify-between border-b border-zinc-100 py-1 dark:border-zinc-800">
-                <span>Завантаженість</span>
-                <strong>{w.occupancy}%</strong>
-              </div>
-              <div className="flex justify-between border-b border-zinc-100 py-1 dark:border-zinc-800">
-                <span>Вільних місць</span>
-                <strong>{w.freeSlots}</strong>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>Активних відправок</span>
-                <strong>{w.activeShipments}</strong>
-              </div>
-            </div>
-
-            <h4 className="mb-2 text-xs uppercase text-zinc-400">Ресурси</h4>
-            <Table className="text-[13px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="h-8 px-2 py-1 text-[11px] uppercase">Назва</TableHead>
-                  <TableHead className="h-8 px-2 py-1 text-[11px] uppercase text-right">К-сть</TableHead>
-                  <TableHead className="h-8 px-2 py-1 text-[11px] uppercase">Од.</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {w.resources.map((r, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="px-2 py-1">{r.name}</TableCell>
-                    <TableCell className="px-2 py-1 text-right font-medium">{r.quantity}</TableCell>
-                    <TableCell className="px-2 py-1 text-zinc-400">{r.unit}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ))}
+                <div className="flex items-center gap-1.5 mb-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                  <Boxes className="h-3.5 w-3.5" />
+                  Ресурси
+                </div>
+                <div className="max-h-48 overflow-y-auto pr-1 border rounded-md border-border">
+                  <Table className="text-sm">
+                    <TableHeader className="sticky top-0 bg-muted/50">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="h-8 px-2 py-1 text-xs uppercase">Назва</TableHead>
+                        <TableHead className="h-8 px-2 py-1 text-xs uppercase">Категорія</TableHead>
+                        <TableHead className="h-8 px-2 py-1 text-xs uppercase text-right">К-сть</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {w.inventory?.map((inv: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="px-2 py-1.5 font-medium text-foreground">{inv.resource?.name}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-muted-foreground">{inv.resource?.category}</TableCell>
+                          <TableCell className="px-2 py-1.5 text-right font-mono text-foreground">{inv.quantityAvailable}</TableCell>
+                        </TableRow>
+                      ))}
+                      {(!w.inventory || w.inventory.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center text-muted-foreground py-4">Немає ресурсів</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )

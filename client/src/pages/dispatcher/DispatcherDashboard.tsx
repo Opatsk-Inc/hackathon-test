@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
 import {
   MapPin,
   Truck,
@@ -23,93 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-type Urgency = "normal" | "high" | "critical"
-type DeliveryStatus = "pending" | "picked_up" | "in_transit" | "delivered"
-
-interface Delivery {
-  id: string
-  status: DeliveryStatus
-  from: string
-  to: string
-  cargo: string
-  urgency: Urgency
-  driver?: string
-  eta?: string
-}
-
-const MOCK_DELIVERIES: Delivery[] = [
-  {
-    id: "DLV-001",
-    status: "in_transit",
-    from: "Warehouse Kyiv-A",
-    to: "Distribution Hub Lviv",
-    cargo: "Electronics — 240 units",
-    urgency: "critical",
-    driver: "O. Kovalenko",
-    eta: "14:30",
-  },
-  {
-    id: "DLV-002",
-    status: "pending",
-    from: "Supplier Depot Odesa",
-    to: "Warehouse Kyiv-B",
-    cargo: "Medical Supplies — 80 boxes",
-    urgency: "high",
-    driver: undefined,
-    eta: undefined,
-  },
-  {
-    id: "DLV-003",
-    status: "picked_up",
-    from: "Factory Dnipro",
-    to: "Retail Point Kharkiv",
-    cargo: "Furniture — 12 pallets",
-    urgency: "normal",
-    driver: "I. Bondarenko",
-    eta: "17:45",
-  },
-  {
-    id: "DLV-004",
-    status: "in_transit",
-    from: "Port Mykolaiv",
-    to: "Cold Storage Kyiv",
-    cargo: "Frozen Goods — 5 reefer",
-    urgency: "high",
-    driver: "M. Shevchenko",
-    eta: "16:10",
-  },
-  {
-    id: "DLV-005",
-    status: "delivered",
-    from: "Warehouse Kyiv-A",
-    to: "Retail Point Vinnytsia",
-    cargo: "Clothing — 320 units",
-    urgency: "normal",
-    driver: "T. Melnyk",
-    eta: "—",
-  },
-  {
-    id: "DLV-006",
-    status: "pending",
-    from: "Supplier Depot Zaporizhzhia",
-    to: "Warehouse Kyiv-A",
-    cargo: "Raw Materials — 18 tons",
-    urgency: "critical",
-    driver: undefined,
-    eta: undefined,
-  },
-  {
-    id: "DLV-007",
-    status: "in_transit",
-    from: "Distribution Hub Lviv",
-    to: "Retail Point Ivano-Frankivsk",
-    cargo: "FMCG — 150 boxes",
-    urgency: "normal",
-    driver: "A. Lysenko",
-    eta: "15:20",
-  },
-]
 
 function MapPlaceholder() {
   return (
@@ -198,8 +113,25 @@ function HudStat({
 
 export default function DispatcherDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
+  
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["orders"],
+    queryFn: api.getOrders,
+  })
 
-  const filteredDeliveries = MOCK_DELIVERIES.filter((d) => {
+  // Format real API data to fit the UI table
+  const deliveries = orders.map((o: any) => ({
+    id: o.id.split('-')[0].toUpperCase(),
+    status: o.trip?.status || o.status,
+    from: o.provider?.name || "Pending Provider",
+    to: o.requester?.name || "Unknown Requester",
+    cargo: `${o.resource?.name || 'Unknown'} — ${o.quantity}`,
+    urgency: o.priority?.toLowerCase() || "normal",
+    driver: o.trip?.driverName || "—",
+    eta: "—", // Field for ETA can be calculated in future
+  }))
+
+  const filteredDeliveries = deliveries.filter((d: any) => {
     if (!searchQuery) return true
     const q = searchQuery.toLowerCase()
     return (
@@ -211,10 +143,25 @@ export default function DispatcherDashboard() {
   })
 
   const stats = {
-    total: MOCK_DELIVERIES.length,
-    inTransit: MOCK_DELIVERIES.filter((d) => d.status === "in_transit").length,
-    pending: MOCK_DELIVERIES.filter((d) => d.status === "pending").length,
-    critical: MOCK_DELIVERIES.filter((d) => d.urgency === "critical").length,
+    total: deliveries.length,
+    inTransit: deliveries.filter((d: any) => d.status === "IN_TRANSIT" || d.status === "EN_ROUTE").length,
+    pending: deliveries.filter((d: any) => d.status === "PENDING").length,
+    critical: deliveries.filter((d: any) => d.urgency === "critical").length,
+  }
+
+  // Helper mappings for badges
+  const urgencyVariants: Record<string, "critical" | "high" | "normal" | "default"> = {
+    critical: "critical",
+    high: "high",
+    normal: "normal",
+  }
+
+  const statusVariants: Record<string, "pending" | "in_transit" | "delivered" | "picked_up" | "sos" | "default"> = {
+    PENDING: "pending",
+    EN_ROUTE: "in_transit",
+    IN_TRANSIT: "in_transit",
+    DELIVERED: "delivered",
+    SOS: "sos",
   }
 
   return (
@@ -284,29 +231,39 @@ export default function DispatcherDashboard() {
                   <TableHead className="uppercase text-[10px]">To (B)</TableHead>
                   <TableHead className="uppercase text-[10px]">Cargo</TableHead>
                   <TableHead className="uppercase text-[10px]">Urgency</TableHead>
-                  <TableHead className="uppercase text-[10px] text-right">ETA</TableHead>
+                  <TableHead className="uppercase text-[10px]">Driver</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-[12px]">
-                {filteredDeliveries.map((delivery) => (
-                  <TableRow key={delivery.id}>
-                    <TableCell className="font-mono font-bold leading-none">{delivery.id}</TableCell>
-                    <TableCell>
-                      <Badge variant={delivery.status as any}>
-                        {delivery.status.replace("_", " ").toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-zinc-500">{delivery.from}</TableCell>
-                    <TableCell className="text-zinc-500">{delivery.to}</TableCell>
-                    <TableCell>{delivery.cargo}</TableCell>
-                    <TableCell>
-                      <Badge variant={delivery.urgency as any}>
-                        {delivery.urgency.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-zinc-400">{delivery.eta ?? "—"}</TableCell>
-                   </TableRow>
-                ))}
+                {isLoading ? (
+                  <TableRow>
+                     <TableCell colSpan={7} className="text-center py-4 text-zinc-500">Loading deliveries...</TableCell>
+                  </TableRow>
+                ) : filteredDeliveries.length === 0 ? (
+                  <TableRow>
+                     <TableCell colSpan={7} className="text-center py-4 text-zinc-500">No active deliveries found.</TableCell>
+                  </TableRow>
+                ) : (
+                  filteredDeliveries.map((delivery: any, idx: number) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-mono font-bold leading-none">{delivery.id}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariants[delivery.status] || "default" as any}>
+                          {delivery.status.replace("_", " ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-zinc-500">{delivery.from}</TableCell>
+                      <TableCell className="text-zinc-500">{delivery.to}</TableCell>
+                      <TableCell>{delivery.cargo}</TableCell>
+                      <TableCell>
+                        <Badge variant={urgencyVariants[delivery.urgency] || "default" as any}>
+                          {delivery.urgency.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-zinc-400">{delivery.driver}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

@@ -23,6 +23,9 @@
     "prisma:generate:watch": "npx prisma generate --watch",
     "postinstall": "npm run prisma:generate"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "lint-staged": {
     "*.{js,ts}": [
       "cross-env NODE_ENV=development eslint --cache",
