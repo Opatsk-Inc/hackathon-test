@@ -97,6 +97,17 @@ export class DispatcherController {
   @ApiResponse({ status: 404, description: 'Trip not found' })
   @ApiParam({ name: 'tripId', description: 'ID of the trip to resolve' })
   async resolveSos(@Param('tripId') tripId: string) {
-    return this.dispatcherService.resolveSos(tripId);
+      return this.dispatcherService.resolveSos(tripId);
+  }
+
+  @Get('api/trips/:tripId/track')
+  @Roles(Role.DISPATCHER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get raw GPS track points for a trip ordered by time' })
+  @ApiResponse({ status: 200, description: 'List of track points returned' })
+  @ApiResponse({ status: 404, description: 'Trip not found' })
+  @ApiParam({ name: 'tripId', description: 'ID of the trip' })
+  async getTripTrack(@Param('tripId') tripId: string) {
+    return this.dispatcherService.getTripTrack(tripId);
   }
 }

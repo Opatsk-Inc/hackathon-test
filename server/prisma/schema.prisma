@@ -12,13 +12,13 @@ enum Role {
 }
 
 model User {
-  id               Int       @id @default(autoincrement())
-  email            String    @unique
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
   passwordHash     String
   firstName        String?
   lastName         String?
-  role             Role      @default(WAREHOUSE_MANAGER)
-  registrationDate DateTime  @default(dbgenerated("timezone('UTC'::text, now())")) @db.Timestamp(6)
+  role             Role     @default(WAREHOUSE_MANAGER)
+  registrationDate DateTime @default(dbgenerated("timezone('UTC'::text, now())")) @db.Timestamp(6)
 
   warehouseId String?
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
@@ -103,14 +103,27 @@ enum TripStatus {
 }
 
 model Trip {
-  id         String     @id @default(uuid())
-  magicToken String     @unique @default(uuid())
-  status     TripStatus @default(PENDING)
+  id         String      @id @default(uuid())
+  magicToken String      @unique @default(uuid())
+  status     TripStatus  @default(PENDING)
   driverName String?
   currentLat Float?
   currentLng Float?
-  orderId    String     @unique
-  order      Order      @relation(fields: [orderId], references: [id])
+  orderId    String      @unique
+  order      Order       @relation(fields: [orderId], references: [id])
+  points     TripPoint[]
 
   @@map("trip")
+}
+
+model TripPoint {
+  id        String   @id @default(uuid())
+  tripId    String
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("trip_point")
 }
