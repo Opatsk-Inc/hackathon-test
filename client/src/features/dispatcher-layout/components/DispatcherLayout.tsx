@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { removeToken } from "@/shared/api/auth"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -30,6 +31,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function DispatcherLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  const handleLogout = () => {
+    removeToken()
+    window.location.href = "/"
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
@@ -98,7 +104,7 @@ export default function DispatcherLayout() {
 
             <Button
               variant="destructive"
-              onClick={() => alert("Вихід з акаунту")}
+              onClick={handleLogout}
               className="w-full gap-2 font-medium"
             >
               <LogOut className="h-4 w-4" />
