@@ -7,6 +7,7 @@ import WarehousesPage from "@/pages/dispatcher/WarehousesPage"
 import RequestsPage from "@/pages/dispatcher/RequestsPage"
 import DriversPage from "@/pages/dispatcher/DriversPage"
 import LoginPage from "@/pages/auth/LoginPage"
+import SignUpPage from "@/pages/auth/SignUpPage"
 import ManagerLayout from "@/features/manager-layout"
 import ManagerResourcesPage from "@/pages/manager/ResourcesPage"
 import ManagerOrdersPage from "@/pages/manager/OrdersPage"
@@ -19,6 +20,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route element={<RequireAuth allowedRoles={["DISPATCHER"]} />}>
           <Route path="dispatcher" element={<DispatcherLayout />}>
             <Route index element={<DashboardPage />} />

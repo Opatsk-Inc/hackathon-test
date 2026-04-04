@@ -101,6 +101,18 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-zinc-500 dark:text-zinc-400">
+            Don't have an account?{" "}
+          </span>
+          <button
+            onClick={() => navigate("/signup")}
+            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Sign up
+          </button>
+        </div>
       </div>
     </div>
   )
