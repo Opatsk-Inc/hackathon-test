@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getOrders, approveOrder } from "../api"
-import type { IOrder } from "../types"
+import { getOrders, approveOrder, type IApproveOrderResponse } from "@/lib/api"
+import type { IOrder } from "@/lib/types"
 
 export function useRequestsPage() {
   const queryClient = useQueryClient()
@@ -29,7 +29,8 @@ export function useRequestsPage() {
       orderId: string
       payload: { driverName: string }
     }) => approveOrder(orderId, payload),
-    onSuccess: (updatedOrder) => {
+    onSuccess: (response: IApproveOrderResponse) => {
+      const updatedOrder = response.order
       // Оновлюємо кеш замість перезавантаження
       queryClient.setQueryData(
         ["orders"],

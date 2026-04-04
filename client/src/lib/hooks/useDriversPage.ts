@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getActiveTrips, resolveSos } from "../api"
-import type { ITrip } from "../types"
+import { getActiveTrips, resolveSos } from "@/lib/api"
+import type { ITrip } from "@/lib/types"
 
 export function useDriversPage() {
   const queryClient = useQueryClient()
@@ -22,7 +22,7 @@ export function useDriversPage() {
 
   const resolveSosMutation = useMutation({
     mutationFn: (tripId: string) => resolveSos(tripId),
-    onSuccess: (updatedTrip) => {
+    onSuccess: (updatedTrip: ITrip) => {
       // Оновлюємо кеш активних поїздок
       queryClient.setQueryData(
         ["activeTrips"],

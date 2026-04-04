@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { getWarehouses } from "../api"
-import type { IWarehouse } from "../types"
-import { calculateReservedQuantity, calculateAvailableQuantity } from "../utils"
+import { getWarehouses } from "@/lib/api"
+import type { IWarehouse } from "@/lib/types"
+import { calculateReservedQuantity, calculateAvailableQuantity } from "@/lib/utils"
 
 export function useWarehousesPage() {
   const {

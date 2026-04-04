@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from "react"
-import type * as React from "react"
 import { LayoutDashboard, Truck, MapPin, TruckIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"

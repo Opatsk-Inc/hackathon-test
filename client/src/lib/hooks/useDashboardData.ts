@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { getOrders, getWarehouses } from "../api"
-import type { IOrder, IWarehouse } from "../types"
+import { getOrders, getWarehouses } from "@/lib/api"
+import type { IOrder, IWarehouse } from "@/lib/types"
 
 export function useDashboardData() {
   const {
