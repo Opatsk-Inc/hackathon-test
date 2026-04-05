@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApproveOrderDto } from './dto/approve-order.dto';
 
@@ -110,7 +111,7 @@ export class DispatcherService {
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
         data: {
-          status: 'APPROVED',
+          status: OrderStatus.APPROVED,
           providerId: inventory.warehouseId,
         },
         include: { resource: true, requester: true, provider: true },
@@ -138,6 +139,28 @@ export class DispatcherService {
       this.realtimeService.emit('ORDER_APPROVED', result);
       return result;
     });
+  }
+
+  async rejectOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status !== 'PENDING') {
+      throw new BadRequestException('Only PENDING orders can be rejected');
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.REJECTED },
+    });
+
+    this.realtimeService.emit('ORDER_REJECTED', { orderId: updatedOrder.id });
+    return updatedOrder;
   }
 
   async getActiveTrips() {

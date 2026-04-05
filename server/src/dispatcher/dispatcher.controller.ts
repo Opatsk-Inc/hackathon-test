@@ -77,6 +77,18 @@ export class DispatcherController {
     return this.dispatcherService.approveOrder(orderId, dto);
   }
 
+  @Patch('api/orders/:orderId/reject')
+  @Roles(Role.DISPATCHER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reject an order' })
+  @ApiResponse({ status: 200, description: 'Order rejected' })
+  @ApiResponse({ status: 400, description: 'Order is not in PENDING status' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiParam({ name: 'orderId', description: 'ID of the order to reject' })
+  async rejectOrder(@Param('orderId') orderId: string) {
+    return this.dispatcherService.rejectOrder(orderId);
+  }
+
   // ─── TRIPS ────────────────────────────────────────────────────────────────────
 
   @Get('api/trips/active')

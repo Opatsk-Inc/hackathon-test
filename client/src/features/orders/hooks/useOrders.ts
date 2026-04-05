@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getOrders as getOrdersAPI,
   approveOrder as approveOrderAPI,
+  rejectOrder as rejectOrderAPI,
 } from "../api/orders.api"
 import type { IOrder } from "@/shared/types"
 import type { IApproveOrderResponse } from "../types/order.types"
@@ -77,6 +78,32 @@ export function useOrders() {
     })
   }
 
+  const rejectOrderMutation = useMutation({
+    mutationFn: (orderId: string) => rejectOrderAPI(orderId),
+    onSuccess: (updatedOrder: IOrder) => {
+      queryClient.setQueryData<IOrder[]>(["orders"], (old) =>
+        old?.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)) ?? []
+      )
+      queryClient.invalidateQueries({ queryKey: ["requests"] })
+    },
+  })
+
+  // Expose the mutation for component-level success handling
+  const rejectOrder = (
+    orderId: string,
+    options?: { onSuccess?: (response: IOrder) => void }
+  ) => {
+    return rejectOrderMutation.mutate(orderId, {
+      onSuccess: (response) => {
+        queryClient.setQueryData<IOrder[]>(["orders"], (old) =>
+          old?.map((o) => (o.id === response.id ? response : o)) ?? []
+        )
+        queryClient.invalidateQueries({ queryKey: ["requests"] })
+        options?.onSuccess?.(response)
+      },
+    })
+  }
+
   // Filter functionality
   const filteredOrders = orders.filter((o: IOrder) => {
     // Search query match
@@ -111,5 +138,8 @@ export function useOrders() {
     approveOrder,
     isApproving: approveOrderMutation.isPending,
     approveOrderError: approveOrderMutation.error,
+    rejectOrder,
+    isRejecting: rejectOrderMutation.isPending,
+    rejectOrderError: rejectOrderMutation.error,
   }
 }

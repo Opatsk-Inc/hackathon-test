@@ -22,6 +22,7 @@ export const formatOrderStatus = (status: string) => {
   if (s === "in_transit") return "In Transit"
   if (s === "delivered") return "Delivered"
   if (s === "cancelled") return "Cancelled"
+  if (s === "rejected") return "Rejected"
   return status
 }
 
@@ -44,7 +45,7 @@ export const getOrderStatusVariant = (status: string) => {
   if (s === "pending") return "pending"
   if (s === "en_route" || s === "in_transit") return "active"
   if (s === "delivered") return "delivered"
-  if (s === "sos" || s === "cancelled") return "destructive"
+  if (s === "sos" || s === "cancelled" || s === "rejected") return "destructive"
   return "outline"
 }
 

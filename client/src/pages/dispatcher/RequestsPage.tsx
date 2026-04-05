@@ -32,7 +32,13 @@ import {
 
 export default function RequestsPage() {
   const { requests: pendingOrders, isLoading, error } = useRequests()
-  const { approveOrder, isApproving, approveOrderError } = useOrders()
+  const {
+    approveOrder,
+    isApproving,
+    approveOrderError,
+    rejectOrder,
+    isRejecting,
+  } = useOrders()
 
   const [approveOrderId, setApproveOrderId] = useState<string | null>(null)
   const [driverName, setDriverName] = useState("")
@@ -179,8 +185,14 @@ export default function RequestsPage() {
                       variant="destructive"
                       size="sm"
                       className="w-full"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to reject this request?")) {
+                          rejectOrder(r.id)
+                        }
+                      }}
+                      disabled={isRejecting}
                     >
-                      Reject
+                      {isRejecting ? "Rejecting..." : "Reject"}
                     </Button>
                   </div>
                 </CardContent>
