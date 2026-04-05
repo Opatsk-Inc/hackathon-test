@@ -7,9 +7,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { AdjustInventoryDto, CreateOrderDto } from './dto';
 
+import { RealtimeService } from '../common/realtime.service';
+
 @Injectable()
 export class WarehouseService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   async getMyInventory(warehouseId: string) {
     return this.prisma.inventory.findMany({
@@ -39,7 +44,7 @@ export class WarehouseService {
   }
 
   async createOrder(warehouseId: string, dto: CreateOrderDto) {
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         requesterId: warehouseId,
         resourceId: dto.resourceId,
@@ -48,6 +53,10 @@ export class WarehouseService {
       },
       include: { resource: true, requester: true },
     });
+
+    this.realtimeService.emit('ORDER_CREATED', order);
+
+    return order;
   }
 
   async getMyOrders(warehouseId: string) {

@@ -14,8 +14,11 @@ import ManagerOrdersPage from "@/pages/manager/OrdersPage"
 import ManagerReplenishPage from "@/pages/manager/ReplenishPage"
 import ManagerInventoryPage from "@/pages/manager/InventoryPage"
 import DriverPage from "@/pages/driver/DriverPage"
+import { useRealtimeSync } from "@/shared/hooks/useRealtimeSync"
 
 export function App() {
+  useRealtimeSync()
+
   return (
     <BrowserRouter>
       <Routes>

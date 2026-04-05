@@ -8,9 +8,12 @@ import { DispatcherModule } from './dispatcher/dispatcher.module';
 import { DriverModule } from './driver/driver.module';
 import { ConfigModule } from '@nestjs/config';
 
+import { RealtimeModule } from './common/realtime.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    RealtimeModule,
     UserModule,
     AuthModule,
     WarehouseModule,
