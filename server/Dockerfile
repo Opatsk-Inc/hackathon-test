@@ -18,7 +18,7 @@ ENV POSTGRES_DB="postgres"
 
 RUN npx prisma generate
 
-RUN npm run build && ls -la dist/main.js
+RUN npx rimraf dist && npx tsc -p tsconfig.build.json || (echo "TSC FAILED" && exit 1)
 
 RUN npm prune --omit=dev
 
