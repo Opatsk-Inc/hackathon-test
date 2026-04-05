@@ -36,7 +36,7 @@ export default function ManagerLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-screen overflow-x-hidden bg-background text-foreground">
       {/* Desktop sidebar */}
       <nav className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4 sm:flex">
         <Logo />
@@ -78,7 +78,7 @@ export default function ManagerLayout() {
       </nav>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-background p-4 pb-20 sm:p-6">
+      <main className="min-w-0 flex-1 overflow-y-auto bg-background p-3 pb-20 sm:p-6">
         <header className="mb-4 flex items-center justify-end sm:mb-6 sm:hidden">
           <Button
             variant="ghost"
@@ -94,7 +94,7 @@ export default function ManagerLayout() {
 
       {/* Mobile bottom navigation (horizontal scroll) */}
       <nav
-        className="safe-area-bottom fixed inset-x-0 bottom-0 z-50 flex overflow-x-auto border-t border-border bg-card py-1 sm:hidden"
+        className="safe-area-bottom fixed inset-x-0 bottom-0 z-50 flex min-w-0 overflow-x-auto border-t border-border bg-card py-1 sm:hidden"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <style>{`nav::-webkit-scrollbar{display:none}`}</style>

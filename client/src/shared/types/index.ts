@@ -52,6 +52,8 @@ export interface IInventory {
   quantityReserved: number
   quantityUsed: number
   resource?: IResource
+  criticalThreshold?: number
+  warningThreshold?: number
 }
 
 export interface ITrip {

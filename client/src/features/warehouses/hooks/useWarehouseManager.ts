@@ -62,6 +62,7 @@ export function useResourcesAvailability() {
 
   return {
     inventory: filteredItems,
+    allInventory: inventory, // raw unfiltered data for KPI
     isLoading,
     error,
     searchQuery,
@@ -141,7 +142,9 @@ export function useMyOrders() {
 
   return {
     orders: displayedOrders,
-    allOrders: orders,
+    allOrders: orders, // raw data for KPI
+    incomingOrders,
+    outgoingOrders,
     isLoading,
     error,
     activeTab,
@@ -185,6 +188,7 @@ export function useReplenishmentRequest() {
 
   return {
     resources,
+    inventory,
     isLoadingResources: isLoadingInventory,
     resourcesError: inventoryError,
     createOrder: createOrderMutation.mutate,

@@ -1,7 +1,15 @@
-import { ArrowDownIcon, ArrowUpIcon, TruckIcon } from "lucide-react"
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  TruckIcon,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageLoader } from "@/components/ui/loaders"
+import { KPIStrip } from "@/components/ui/kpi"
 import { useMyOrders } from "@/features/warehouses"
 import { formatDate } from "@/shared/utils/formatDate"
 import {
@@ -12,57 +20,162 @@ import {
 } from "@/features/orders/utils/order.formatters"
 import type { IOrder } from "@/shared/types"
 
+function getSLABadge(order: IOrder) {
+  const now = new Date()
+  const created = new Date(order.createdAt)
+  const hoursSince = Math.floor(
+    (now.getTime() - created.getTime()) / (1000 * 60 * 60)
+  )
+
+  // SLA thresholds: <4h green, <24h amber, >24h red
+  if (hoursSince < 4) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        <Clock className="h-3 w-3" />
+        {hoursSince}г
+      </span>
+    )
+  }
+  if (hoursSince < 24) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+        <Clock className="h-3 w-3" />
+        {hoursSince}г
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+      <AlertCircle className="h-3 w-3" />
+      {hoursSince}г
+    </span>
+  )
+}
+
+function getStatusIndicator(status: string) {
+  const s = status.toLowerCase()
+  if (s === "delivered")
+    return <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+  if (s === "in_transit" || s === "en_route")
+    return <TruckIcon className="h-3.5 w-3.5 text-blue-500" />
+  if (s === "pending") return <Clock className="h-3.5 w-3.5 text-amber-500" />
+  if (s === "cancelled")
+    return <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+  return null
+}
+
 export default function ManagerOrdersPage() {
-  const { orders, isLoading, error, activeTab, setActiveTab } = useMyOrders()
+  const {
+    orders,
+    allOrders,
+    incomingOrders,
+    outgoingOrders,
+    isLoading,
+    error,
+    activeTab,
+    setActiveTab,
+  } = useMyOrders()
+
+  const pendingCount = allOrders.filter(
+    (o) => o.status.toLowerCase() === "pending"
+  ).length
+  const inTransitCount = allOrders.filter((o) =>
+    ["in_transit", "en_route"].includes(o.status.toLowerCase())
+  ).length
+  const deliveredCount = allOrders.filter(
+    (o) => o.status.toLowerCase() === "delivered"
+  ).length
+
+  const kpiCards = [
+    {
+      label: "Всього",
+      value: allOrders.length,
+      icon: TruckIcon,
+      variant: "default" as const,
+    },
+    {
+      label: "Очікують",
+      value: pendingCount,
+      icon: Clock,
+      variant: pendingCount > 0 ? ("warning" as const) : ("success" as const),
+    },
+    {
+      label: "В дорозі",
+      value: inTransitCount,
+      icon: TruckIcon,
+      variant: "default" as const,
+    },
+    {
+      label: "Доставлено",
+      value: deliveredCount,
+      icon: CheckCircle,
+      variant: "success" as const,
+    },
+  ]
 
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
-        <p className="font-medium">Error loading orders</p>
+        <p className="font-medium">Помилка завантаження замовлень</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Loading orders...">
-      <div className="flex flex-col gap-4">
+    <PageLoader isLoading={isLoading} label="Завантаження замовлень...">
+      <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TruckIcon className="h-5 w-5 text-foreground" />
-            <h1 className="text-lg font-bold sm:text-xl">Orders</h1>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <TruckIcon className="h-5 w-5 shrink-0 text-foreground" />
+            <h1 className="truncate text-lg font-bold sm:text-xl">
+              Замовлення
+            </h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {orders.length} units
+            {allOrders.length} од.
           </span>
         </div>
+
+        {/* KPI Strip */}
+        <KPIStrip cards={kpiCards} />
 
         {/* Segmented tabs */}
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           <button
             type="button"
             onClick={() => setActiveTab("incoming")}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
+            className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition-all sm:gap-1.5 sm:px-3 ${
               activeTab === "incoming"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <ArrowDownIcon className="h-4 w-4" />
-            Incoming
+            <ArrowDownIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">Вхідні</span>
+            {incomingOrders.length > 0 && (
+              <span className="ml-0.5 shrink-0 rounded-full bg-muted-foreground/20 px-1.5 py-0.5 text-xs">
+                {incomingOrders.length}
+              </span>
+            )}
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("outgoing")}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
+            className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition-all sm:gap-1.5 sm:px-3 ${
               activeTab === "outgoing"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <ArrowUpIcon className="h-4 w-4" />
-            Outgoing
+            <ArrowUpIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">Вихідні</span>
+            {outgoingOrders.length > 0 && (
+              <span className="ml-0.5 shrink-0 rounded-full bg-muted-foreground/20 px-1.5 py-0.5 text-xs">
+                {outgoingOrders.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -71,49 +184,61 @@ export default function ManagerOrdersPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <TruckIcon className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">No orders found</p>
+              <p className="text-sm">Замовлень не знайдено</p>
             </CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {orders.map((order: IOrder) => (
               <Card key={order.id} className="shadow-sm">
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   {/* Top row: ID + Status + Priority */}
-                  <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
                     <span className="font-mono text-xs text-muted-foreground">
                       {order.id.slice(0, 8).toUpperCase()}
                     </span>
-                    <div className="flex gap-1.5">
-                      <Badge variant={getOrderStatusVariant(order.status)}>
+                    <div className="flex min-w-0 flex-wrap items-center gap-1">
+                      {getStatusIndicator(order.status)}
+                      <Badge
+                        variant={getOrderStatusVariant(order.status)}
+                        className="shrink-0"
+                      >
                         {formatOrderStatus(order.status)}
                       </Badge>
-                      <Badge variant={getPriorityVariant(order.priority)}>
+                      <Badge
+                        variant={getPriorityVariant(order.priority)}
+                        className="shrink-0"
+                      >
                         {formatPriorityLevel(order.priority)}
                       </Badge>
+                      {getSLABadge(order)}
                     </div>
                   </div>
 
                   {/* Resource info */}
                   <div className="space-y-1.5">
-                    <p className="text-sm leading-tight font-medium">
-                      {order.resource?.name ?? "No name"}
+                    <p className="text-sm leading-tight font-medium wrap-break-word">
+                      {order.resource?.name ?? "Без назви"}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span>
-                        Quantity:{" "}
+                        К-сть:{" "}
                         <strong className="text-foreground">
                           {order.quantity}
                         </strong>{" "}
-                        units
+                        од.
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       {order.provider?.name && (
-                        <span>From: {order.provider.name}</span>
+                        <span className="wrap-break-word">
+                          Від: {order.provider.name}
+                        </span>
                       )}
                       {order.requester?.name && (
-                        <span>For: {order.requester.name}</span>
+                        <span className="wrap-break-word">
+                          Для: {order.requester.name}
+                        </span>
                       )}
                       <span>{formatDate(order.createdAt)}</span>
                     </div>
