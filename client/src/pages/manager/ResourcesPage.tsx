@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { PageLoader } from "@/components/ui/loaders"
+import { ManagerItemCard } from "@/components/ui/manager-item-card"
 import { KPIStrip } from "@/components/ui/kpi"
 import { ManagerHealthToolbar } from "@/components/ui/manager-health-toolbar"
 import {
@@ -25,7 +26,6 @@ import { useResourcesAvailability } from "@/features/warehouses"
 import type { IInventory } from "@/shared/types"
 import {
   computeSeverity,
-  getSeverityRowHighlight,
 } from "@/shared/utils/severity"
 
 function getStockBadge(
@@ -36,7 +36,7 @@ function getStockBadge(
     return (
       <Badge variant="destructive" className="gap-1 px-2.5 py-0.5 text-xs">
         <XCircle className="h-3 w-3" />
-        Немає в наявності
+        Out of stock
       </Badge>
     )
   }
@@ -44,7 +44,7 @@ function getStockBadge(
     return (
       <Badge variant="destructive" className="gap-1 px-2.5 py-0.5 text-xs">
         <AlertTriangle className="h-3 w-3" />
-        Критично
+        Critical
       </Badge>
     )
   }
@@ -55,14 +55,14 @@ function getStockBadge(
         className="gap-1 border-amber-500 px-2.5 py-0.5 text-xs text-amber-600"
       >
         <AlertTriangle className="h-3 w-3" />
-        Попередження
+        Warning
       </Badge>
     )
   }
   return (
     <Badge variant="secondary" className="gap-1 px-2.5 py-0.5 text-xs">
       <CheckCircle2 className="h-3 w-3" />
-      Норма
+      Normal
     </Badge>
   )
 }
@@ -117,25 +117,25 @@ export default function ResourcesPage() {
 
   const kpiCards = [
     {
-      label: "Всього ресурсів",
+      label: "Total Resources",
       value: totalResources,
       icon: Layers,
       variant: "default" as const,
     },
     {
-      label: "В наявності",
+      label: "In Stock",
       value: inStock,
       icon: CheckCircle2,
       variant: "success" as const,
     },
     {
-      label: "Критично",
+      label: "Critical",
       value: criticalCount,
       icon: AlertTriangle,
       variant: criticalCount > 0 ? ("danger" as const) : ("success" as const),
     },
     {
-      label: "Загальна кількість",
+      label: "Total Quantity",
       value: totalAvailable,
       icon: TrendingUp,
       variant: "default" as const,
@@ -175,23 +175,23 @@ export default function ResourcesPage() {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
         <XCircle className="mx-auto mb-2 h-8 w-8" />
-        <p className="font-medium">Помилка завантаження</p>
+        <p className="font-medium">Loading error</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження ресурсів...">
+    <PageLoader isLoading={isLoading} label="Loading resources...">
       <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
         {/* Header */}
         <div className="flex min-w-0 items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <Package className="h-5 w-5 shrink-0 text-foreground" />
-            <h1 className="truncate text-lg font-bold sm:text-xl">Ресурси</h1>
+            <h1 className="truncate text-lg font-bold sm:text-xl">Resources</h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {allInventory.length} од.
+            {allInventory.length} items
           </span>
         </div>
 
@@ -209,11 +209,11 @@ export default function ResourcesPage() {
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           {(
             [
-              { value: "all", label: "Усі" },
-              { value: "critical", label: "Критичні" },
-              { value: "warning", label: "Попередження" },
-              { value: "low", label: "Низький запас" },
-            ] as { value: QuickFilter; label: string }[]
+              { value: "all" as QuickFilter, label: "All" },
+              { value: "critical" as QuickFilter, label: "Critical" },
+              { value: "warning" as QuickFilter, label: "Warning" },
+              { value: "low" as QuickFilter, label: "Low Stock" },
+            ]
           ).map((opt) => (
             <button
               key={opt.value}
@@ -235,7 +235,7 @@ export default function ResourcesPage() {
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Пошук..."
+              placeholder="Search..."
               className="h-11 pl-9 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -244,10 +244,10 @@ export default function ResourcesPage() {
           <div className="flex flex-col gap-2 sm:flex-row">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="h-11 text-sm">
-                <SelectValue placeholder="Категорія" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Усі</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat.toLowerCase()}>
                     {cat}
@@ -257,13 +257,13 @@ export default function ResourcesPage() {
             </Select>
             <Select value={stockFilter} onValueChange={setStockFilter}>
               <SelectTrigger className="h-11 text-sm">
-                <SelectValue placeholder="Наявність" />
+                <SelectValue placeholder="Availability" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Усі</SelectItem>
-                <SelectItem value="ok">В наявності</SelectItem>
-                <SelectItem value="low">Низький запас</SelectItem>
-                <SelectItem value="out">Немає в наявності</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="ok">In stock</SelectItem>
+                <SelectItem value="low">Low stock</SelectItem>
+                <SelectItem value="out">Out of stock</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -274,54 +274,25 @@ export default function ResourcesPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Package className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Нічого не знайдено</p>
+              <p className="text-sm">Nothing found</p>
             </CardContent>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {filteredByQuick.map((item) => (
-              <Card
+              <ManagerItemCard
                 key={item.id}
-                className={`shadow-sm transition-shadow active:bg-muted/50 ${getSeverityRowHighlight(item.severity)}`}
-              >
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-sm leading-tight font-medium">
-                          {item.resource?.name ?? "Без назви"}
-                        </p>
-                        {getStockBadge(item.quantityAvailable, item.severity)}
-                      </div>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {item.resource?.category ?? "—"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t pt-3 text-xs">
-                    <div className="flex gap-4">
-                      <div>
-                        <span className="text-muted-foreground">Доступно</span>
-                        <p
-                          className={`text-base font-semibold tabular-nums ${
-                            item.severity === "critical"
-                              ? "text-red-600 dark:text-red-400"
-                              : ""
-                          }`}
-                        >
-                          {item.quantityAvailable}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Резерв</span>
-                        <p className="text-base text-muted-foreground tabular-nums">
-                          {item.quantityReserved}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                title={item.resource?.name ?? "No name"}
+                subtitle={item.resource?.category ?? "—"}
+                severity={item.severity}
+                available={item.quantityAvailable}
+                reserved={item.quantityReserved}
+                badge={getStockBadge(item.quantityAvailable, item.severity)}
+                className="transition-shadow active:bg-muted/50"
+                metricsExtra={
+                  <div className="ml-auto border-t pt-2" />
+                }
+              />
             ))}
           </div>
         )}

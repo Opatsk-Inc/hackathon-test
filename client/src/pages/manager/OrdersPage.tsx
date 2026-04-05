@@ -32,7 +32,7 @@ function getSLABadge(order: IOrder) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
         <Clock className="h-3 w-3" />
-        {hoursSince}г
+        {hoursSince}h
       </span>
     )
   }
@@ -40,14 +40,14 @@ function getSLABadge(order: IOrder) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
         <Clock className="h-3 w-3" />
-        {hoursSince}г
+        {hoursSince}h
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
       <AlertCircle className="h-3 w-3" />
-      {hoursSince}г
+      {hoursSince}h
     </span>
   )
 }
@@ -88,25 +88,25 @@ export default function ManagerOrdersPage() {
 
   const kpiCards = [
     {
-      label: "Всього",
+      label: "Total",
       value: allOrders.length,
       icon: TruckIcon,
       variant: "default" as const,
     },
     {
-      label: "Очікують",
+      label: "Pending",
       value: pendingCount,
       icon: Clock,
       variant: pendingCount > 0 ? ("warning" as const) : ("success" as const),
     },
     {
-      label: "В дорозі",
+      label: "In Transit",
       value: inTransitCount,
       icon: TruckIcon,
       variant: "default" as const,
     },
     {
-      label: "Доставлено",
+      label: "Delivered",
       value: deliveredCount,
       icon: CheckCircle,
       variant: "success" as const,
@@ -116,25 +116,23 @@ export default function ManagerOrdersPage() {
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
-        <p className="font-medium">Помилка завантаження замовлень</p>
+        <p className="font-medium">Error loading orders</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження замовлень...">
+    <PageLoader isLoading={isLoading} label="Loading orders...">
       <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
         {/* Header */}
         <div className="flex min-w-0 items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <TruckIcon className="h-5 w-5 shrink-0 text-foreground" />
-            <h1 className="truncate text-lg font-bold sm:text-xl">
-              Замовлення
-            </h1>
+            <h1 className="truncate text-lg font-bold sm:text-xl">Orders</h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {allOrders.length} од.
+            {allOrders.length} items
           </span>
         </div>
 
@@ -153,7 +151,7 @@ export default function ManagerOrdersPage() {
             }`}
           >
             <ArrowDownIcon className="h-4 w-4 shrink-0" />
-            <span className="truncate">Вхідні</span>
+            <span className="truncate">Incoming</span>
             {incomingOrders.length > 0 && (
               <span className="ml-0.5 shrink-0 rounded-full bg-muted-foreground/20 px-1.5 py-0.5 text-xs">
                 {incomingOrders.length}
@@ -170,7 +168,7 @@ export default function ManagerOrdersPage() {
             }`}
           >
             <ArrowUpIcon className="h-4 w-4 shrink-0" />
-            <span className="truncate">Вихідні</span>
+            <span className="truncate">Outgoing</span>
             {outgoingOrders.length > 0 && (
               <span className="ml-0.5 shrink-0 rounded-full bg-muted-foreground/20 px-1.5 py-0.5 text-xs">
                 {outgoingOrders.length}
@@ -184,7 +182,7 @@ export default function ManagerOrdersPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <TruckIcon className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Замовлень не знайдено</p>
+              <p className="text-sm">No orders found</p>
             </CardContent>
           </Card>
         ) : (
@@ -218,26 +216,26 @@ export default function ManagerOrdersPage() {
                   {/* Resource info */}
                   <div className="space-y-1.5">
                     <p className="text-sm leading-tight font-medium wrap-break-word">
-                      {order.resource?.name ?? "Без назви"}
+                      {order.resource?.name ?? "No name"}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span>
-                        К-сть:{" "}
+                        Qty:{" "}
                         <strong className="text-foreground">
                           {order.quantity}
                         </strong>{" "}
-                        од.
+                        units
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       {order.provider?.name && (
                         <span className="wrap-break-word">
-                          Від: {order.provider.name}
+                          From: {order.provider.name}
                         </span>
                       )}
                       {order.requester?.name && (
                         <span className="wrap-break-word">
-                          Для: {order.requester.name}
+                          For: {order.requester.name}
                         </span>
                       )}
                       <span>{formatDate(order.createdAt)}</span>

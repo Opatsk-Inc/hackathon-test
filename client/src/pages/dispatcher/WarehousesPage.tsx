@@ -50,19 +50,19 @@ export default function WarehousesPage() {
                 <CardContent className="pt-4">
                   <div className="mb-4 space-y-2 text-sm">
                     <div className="flex items-center justify-between text-muted-foreground">
-                      <span>Загалом одиниць товару</span>
+                      <span>Total items</span>
                       <strong className="text-foreground">
                         {w.totalItems}
                       </strong>
                     </div>
                     <div className="flex items-center justify-between text-muted-foreground">
-                      <span>Зарезервовано товарів</span>
+                      <span>Reserved items</span>
                       <strong className="text-foreground">
                         {w.reservedItems}
                       </strong>
                     </div>
                     <div className="flex items-center justify-between text-muted-foreground">
-                      <span>Активних відправок</span>
+                      <span>Active shipments</span>
                       <strong className="text-foreground">
                         {w.activeShipments}
                       </strong>
@@ -108,7 +108,7 @@ export default function WarehousesPage() {
                               colSpan={3}
                               className="py-4 text-center text-muted-foreground"
                             >
-                              Немає ресурсів
+                              No resources
                             </TableCell>
                           </TableRow>
                         )}

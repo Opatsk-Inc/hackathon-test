@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { KPIStrip } from "@/components/ui/kpi"
 import { Badge } from "@/components/ui/badge"
+import { ManagerItemCard } from "@/components/ui/manager-item-card"
 import { useInventoryAdjustment } from "@/features/warehouses"
 import {
   computeSeverity,
   getSeverityBadgeVariant,
   getSeverityLabel,
-  getSeverityRowHighlight,
   sortBySeverity,
 } from "@/shared/utils/severity"
 
@@ -65,19 +65,19 @@ export default function InventoryPage() {
 
   const kpiCards = [
     {
-      label: "Всього SKU",
+      label: "Total SKU",
       value: totalSKU,
       icon: ClipboardCheck,
       variant: "default" as const,
     },
     {
-      label: "Критичні",
+      label: "Critical",
       value: criticalItems,
       icon: AlertTriangle,
       variant: criticalItems > 0 ? ("danger" as const) : ("success" as const),
     },
     {
-      label: "В резерві",
+      label: "Reserved",
       value: totalReserved,
       icon: TrendingDown,
       variant: totalReserved > 20 ? ("warning" as const) : ("default" as const),
@@ -89,25 +89,25 @@ export default function InventoryPage() {
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
-        <p className="font-medium">Помилка завантаження інвентарю</p>
+        <p className="font-medium">Error loading inventory</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження інвентарю...">
+    <PageLoader isLoading={isLoading} label="Loading inventory...">
       <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
         {/* Header */}
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <ClipboardCheck className="h-5 w-5 shrink-0 text-foreground" />
             <h1 className="truncate text-lg font-bold sm:text-xl">
-              Інвентаризація
+              Inventory Adjustment
             </h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {inventory.length} од.
+            {inventory.length} items
           </span>
         </div>
 
@@ -139,7 +139,7 @@ export default function InventoryPage() {
             <CardContent className="flex items-start gap-2 py-3 text-sm text-amber-800 dark:text-amber-200">
               <Edit2 className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="wrap-break-word">
-                Натисніть для зміни кількості.
+                Click the edit button to change the quantity.
               </span>
             </CardContent>
           </Card>
@@ -150,7 +150,7 @@ export default function InventoryPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <ClipboardCheck className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Інвентар порожній</p>
+              <p className="text-sm">Inventory is empty</p>
             </CardContent>
           </Card>
         ) : (
@@ -161,143 +161,76 @@ export default function InventoryPage() {
               const severity = computeSeverity(item)
 
               return (
-                <Card
+                <ManagerItemCard
                   key={item.id}
-                  className={`shadow-sm transition ${
+                  title={item.resource?.name ?? "No name"}
+                  severity={severity}
+                  available={item.quantityAvailable}
+                  reserved={item.quantityReserved}
+                  badge={
+                    <Badge
+                      variant={
+                        getSeverityBadgeVariant(severity) as
+                          | "destructive"
+                          | "outline"
+                          | "secondary"
+                      }
+                      className="shrink-0 px-2 py-0 text-[10px]"
+                    >
+                      {getSeverityLabel(severity)}
+                    </Badge>
+                  }
+                  className={
                     isHighlighted
                       ? "border-green-400 bg-green-50 dark:border-green-700 dark:bg-green-900/10"
-                      : getSeverityRowHighlight(severity)
-                  }`}
-                >
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <p className="truncate text-sm leading-tight font-medium">
-                            {item.resource?.name ?? "Без назви"}
-                          </p>
-                          <Badge
-                            variant={
-                              getSeverityBadgeVariant(severity) as
-                                | "destructive"
-                                | "outline"
-                                | "secondary"
-                            }
-                            className="shrink-0 px-2 py-0 text-[10px]"
-                          >
-                            {getSeverityLabel(severity)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                severity === "critical"
-                                  ? "w-1/4 bg-red-500"
-                                  : severity === "warning"
-                                    ? "w-2/4 bg-amber-500"
-                                    : "w-full bg-emerald-500"
-                              }`}
-                            />
-                          </div>
-                          <span
-                            className={`text-xs font-medium ${
-                              severity === "critical"
-                                ? "text-red-600 dark:text-red-400"
-                                : severity === "warning"
-                                  ? "text-amber-600 dark:text-amber-400"
-                                  : "text-emerald-600 dark:text-emerald-400"
-                            }`}
-                          >
-                            {severity === "critical"
-                              ? "Критично"
-                              : severity === "warning"
-                                ? "Середньо"
-                                : "Норма"}
-                          </span>
-                        </div>
-                        <div className="flex gap-4 text-xs">
-                          <div>
-                            <span className="text-muted-foreground">
-                              Доступно
-                            </span>
-                            <p
-                              className={`text-base font-semibold tabular-nums ${
-                                severity === "critical"
-                                  ? "text-red-600 dark:text-red-400"
-                                  : ""
-                              }`}
-                            >
-                              {item.quantityAvailable}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              В резерві
-                            </span>
-                            <p className="text-base text-muted-foreground tabular-nums">
-                              {item.quantityReserved}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex shrink-0 flex-col items-center gap-1.5 sm:flex-row">
-                        {isEditing ? (
-                          <>
-                            <Input
-                              type="number"
-                              min={0}
-                              className="h-10 w-20 text-sm"
-                              value={editQuantity}
-                              onChange={(e) => setEditQuantity(e.target.value)}
-                              autoFocus
-                            />
-                            <div className="flex gap-1.5">
-                              <Button
-                                variant="default"
-                                size="sm"
-                                disabled={isAdjusting}
-                                onClick={() => saveAdjustment(item.resourceId)}
-                                className="h-10 w-10 p-0"
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={cancelEdit}
-                                className="h-10 w-10 p-0"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
+                      : ""
+                  }
+                  actions={
+                    isEditing ? (
+                      <>
+                        <Input
+                          type="number"
+                          min={0}
+                          className="h-10 w-20 text-sm"
+                          value={editQuantity}
+                          onChange={(e) => setEditQuantity(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-1.5">
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
-                            className="h-10 gap-1.5 px-3 text-xs"
-                            onClick={() =>
-                              startEdit(item.id, item.quantityAvailable)
-                            }
+                            disabled={isAdjusting}
+                            onClick={() => saveAdjustment(item.resourceId)}
+                            className="h-10 w-10 p-0"
                           >
-                            <Edit2 className="h-3.5 w-3.5" />
-                            <span className="truncate">Змінити</span>
+                            <Save className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Success message */}
-                    {isHighlighted && (
-                      <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-400">
-                        ✓ Кількість оновлено
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={cancelEdit}
+                            className="h-10 w-10 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-10 gap-1.5 px-3 text-xs"
+                        onClick={() =>
+                          startEdit(item.id, item.quantityAvailable)
+                        }
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        <span className="truncate">Edit</span>
+                      </Button>
+                    )
+                  }
+                />
               )
             })}
           </div>
