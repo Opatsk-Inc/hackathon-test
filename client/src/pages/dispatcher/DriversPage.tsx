@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { SosConfirmDialog } from "@/components/ui/sos-confirm-dialog"
 
 export default function DriversPage() {
   const {
@@ -42,9 +43,13 @@ export default function DriversPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [copiedTripId, setCopiedTripId] = useState<string | null>(null)
   const [fallbackTrip, setFallbackTrip] = useState<IActiveTrip | null>(null)
+  const [confirmTripId, setConfirmTripId] = useState<string | null>(null)
 
-  const handleSos = (tripId: string) => {
-    resolveSos(tripId)
+  const handleSosConfirm = () => {
+    if (confirmTripId) {
+      resolveSos(confirmTripId)
+      setConfirmTripId(null)
+    }
   }
 
   const copyMagicLink = async (tripId: string, magicToken: string) => {
@@ -165,8 +170,9 @@ export default function DriversPage() {
                   return (
                     <TableRow
                       key={trip.id}
-                      className={`${isSos ? "bg-destructive/5" : ""} ${i % 2 === 1 ? "bg-muted/50" : ""
-                        }`}
+                      className={`${isSos ? "bg-destructive/5" : ""} ${
+                        i % 2 === 1 ? "bg-muted/50" : ""
+                      }`}
                     >
                       <TableCell
                         className={`font-medium ${isSos ? "text-destructive" : "text-foreground"}`}
@@ -200,7 +206,7 @@ export default function DriversPage() {
                             variant="destructive"
                             size="sm"
                             className="gap-1.5 font-bold text-destructive-foreground shadow-sm hover:bg-destructive/90"
-                            onClick={() => handleSos(trip.id)}
+                            onClick={() => setConfirmTripId(trip.id)}
                             disabled={isResolvingSos}
                           >
                             <ShieldAlert className="h-3.5 w-3.5" />
@@ -279,6 +285,14 @@ export default function DriversPage() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* SOS Confirm Dialog */}
+        <SosConfirmDialog
+          open={!!confirmTripId}
+          onOpenChange={() => setConfirmTripId(null)}
+          onConfirm={handleSosConfirm}
+          isConfirming={isResolvingSos}
+        />
       </div>
     </PageLoader>
   )

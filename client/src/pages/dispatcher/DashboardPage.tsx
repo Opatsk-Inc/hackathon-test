@@ -1,13 +1,13 @@
 import { useState, useCallback, useMemo } from "react"
-import { 
-  LayoutDashboard, 
-  Truck, 
-  MapPin, 
-  TruckIcon, 
-  Navigation, 
-  Package, 
+import {
+  LayoutDashboard,
+  Truck,
+  MapPin,
+  TruckIcon,
+  Navigation,
+  Package,
   Zap,
-  MoreVertical
+  MoreVertical,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -44,6 +44,7 @@ import {
   useDashboardRoadRoutes,
   useNonOverlappingMarkers,
 } from "@/features/dashboard"
+import { useTrips } from "@/features/trips/hooks/useTrips"
 import type { IWarehouse } from "@/shared/types"
 import type { IActiveTrip, LngLat } from "@/features/trips/types/trip.types"
 import {
@@ -51,6 +52,7 @@ import {
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
 import { formatTripStatus } from "@/features/trips/utils/trip.utils"
+import { SosConfirmDialog } from "@/components/ui/sos-confirm-dialog"
 
 const ROUTE_COLORS_BY_STATUS: Record<string, string> = {
   SOS: "#ef4444",
@@ -86,6 +88,8 @@ function DashboardMapContent({
   baseTracks,
   hoveredTripId,
   setHoveredTripId,
+  onResolveSos,
+  isResolvingSos,
 }: {
   warehouses: IWarehouse[]
   activeTrips: IActiveTrip[]
@@ -93,6 +97,8 @@ function DashboardMapContent({
   baseTracks: Record<string, LngLat[]>
   hoveredTripId: string | null
   setHoveredTripId: (id: string | null) => void
+  onResolveSos: (tripId: string) => void
+  isResolvingSos: boolean
 }) {
   const { map, isLoaded } = useMap()
 
@@ -141,11 +147,11 @@ function DashboardMapContent({
               <div className="group relative flex h-9 w-9 items-center justify-center">
                 {/* Background Glow */}
                 <div className="absolute inset-0 scale-75 rounded-full bg-primary/20 blur-md transition-transform group-hover:scale-125" />
-                
+
                 {/* Main Pin */}
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-xl border-2 border-background bg-primary text-primary-foreground shadow-[0_0_15px_rgba(0,138,80,0.3)] transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-110 group-hover:shadow-[0_8px_20px_rgba(0,138,80,0.4)]">
                   <MapPin className="h-4.5 w-4.5" />
-                  
+
                   {/* Decorative tail */}
                   <div className="absolute -bottom-1.5 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-r-2 border-b-2 border-background bg-primary" />
                 </div>
@@ -158,32 +164,53 @@ function DashboardMapContent({
                     <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/20 text-primary">
                       <Package className="h-3.5 w-3.5" />
                     </div>
-                    <strong className="text-sm font-bold tracking-tight">{w.name}</strong>
+                    <strong className="text-sm font-bold tracking-tight">
+                      {w.name}
+                    </strong>
                   </div>
-                  <Badge variant="outline" className="h-5 border-white/10 bg-white/5 text-[10px] text-white">Node</Badge>
+                  <Badge
+                    variant="outline"
+                    className="h-5 border-white/10 bg-white/5 text-[10px] text-white"
+                  >
+                    Node
+                  </Badge>
                 </div>
-                
+
                 <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
                   <MapPin className="h-3 w-3" />
                   <span className="truncate">{w.address}</span>
                 </div>
 
-                <div className="mt-1 space-y-1.5 rounded-lg bg-zinc-900/50 p-2 border border-white/5">
+                <div className="mt-1 space-y-1.5 rounded-lg border border-white/5 bg-zinc-900/50 p-2">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-500 uppercase tracking-wider font-bold text-[9px]">Inventory Status</span>
-                    <span className="text-primary font-mono">{(w.inventory?.length || 0)} categories</span>
+                    <span className="text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
+                      Inventory Status
+                    </span>
+                    <span className="font-mono text-primary">
+                      {w.inventory?.length || 0} categories
+                    </span>
                   </div>
-                  <div className="flex justify-between items-end">
+                  <div className="flex items-end justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-zinc-400">Reserved</span>
-                      <strong className="text-lg font-bold leading-none text-white">
-                        {w.inventory?.reduce<number>((acc, inv) => acc + inv.quantityReserved, 0) || 0}
+                      <span className="text-[10px] text-zinc-400">
+                        Reserved
+                      </span>
+                      <strong className="text-lg leading-none font-bold text-white">
+                        {w.inventory?.reduce<number>(
+                          (acc, inv) => acc + inv.quantityReserved,
+                          0
+                        ) || 0}
                       </strong>
                     </div>
-                    <div className="h-1 flex-1 mx-3 mb-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: '65%' }} />
+                    <div className="mx-3 mb-1.5 h-1 flex-1 overflow-hidden rounded-full bg-zinc-800">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: "65%" }}
+                      />
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-500">Units</span>
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      Units
+                    </span>
                   </div>
                 </div>
               </div>
@@ -240,7 +267,7 @@ function DashboardMapContent({
       {validTrips.map((trip) => {
         const pos = getPosition(`driver-${trip.id}`)
         const lng = pos?.lng ?? trip.currentLng
-        const lat = pos?.lat ?? trip.currentLat
+        const lat = pos?.lat ?? trip.currentLng
 
         const isHovered = hoveredTripId === trip.id
         const color = DRIVER_MARKER_COLORS[trip.status] ?? "#6b7280"
@@ -250,8 +277,12 @@ function DashboardMapContent({
         const requesterName = trip.order.requester?.name || "Destination"
 
         const isSOS = trip.status === "SOS"
-        const priorityColor = trip.order.priority === 'CRITICAL' ? '#ef4444' : 
-                            trip.order.priority === 'HIGH' ? '#f59e0b' : '#3b82f6'
+        const priorityColor =
+          trip.order.priority === "CRITICAL"
+            ? "#ef4444"
+            : trip.order.priority === "HIGH"
+              ? "#f59e0b"
+              : "#3b82f6"
 
         return (
           <MapMarker
@@ -262,7 +293,7 @@ function DashboardMapContent({
             rotationAlignment="map"
           >
             <MarkerContent>
-              <div 
+              <div
                 className="group relative cursor-pointer"
                 onMouseEnter={() => setHoveredTripId(trip.id)}
                 onMouseLeave={() => setHoveredTripId(null)}
@@ -270,29 +301,50 @@ function DashboardMapContent({
                 {/* SOS Multi-layer Pulse */}
                 {isSOS && (
                   <>
-                    <div className="absolute inset-0 z-0 animate-ping rounded-full bg-red-500 opacity-20" style={{ animationDuration: '2s' }} />
-                    <div className="absolute inset-0 z-0 animate-ping rounded-full bg-red-600 opacity-40" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }} />
-                    <div className="absolute inset-0 z-0 animate-ping rounded-full bg-red-400 opacity-30" style={{ animationDuration: '2.5s', animationDelay: '1s' }} />
+                    <div
+                      className="absolute inset-0 z-0 animate-ping rounded-full bg-red-500 opacity-20"
+                      style={{ animationDuration: "2s" }}
+                    />
+                    <div
+                      className="absolute inset-0 z-0 animate-ping rounded-full bg-red-600 opacity-40"
+                      style={{
+                        animationDuration: "1.5s",
+                        animationDelay: "0.5s",
+                      }}
+                    />
+                    <div
+                      className="absolute inset-0 z-0 animate-ping rounded-full bg-red-400 opacity-30"
+                      style={{
+                        animationDuration: "2.5s",
+                        animationDelay: "1s",
+                      }}
+                    />
                   </>
                 )}
 
                 {/* Direction Pointer */}
-                <div 
+                <div
                   className={cn(
                     "relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-white shadow-2xl transition-all duration-300",
-                    isHovered ? "scale-125 -translate-y-1 ring-4 ring-primary/30" : "scale-100"
+                    isHovered
+                      ? "-translate-y-1 scale-125 ring-4 ring-primary/30"
+                      : "scale-100"
                   )}
-                  style={{ 
+                  style={{
                     backgroundColor: color,
                     zIndex: isHovered ? 50 : 10,
-                    boxShadow: isSOS ? '0 0 20px rgba(239, 68, 68, 0.6)' : isHovered ? '0 10px 25px rgba(0,0,0,0.3)' : '0 4px 10px rgba(0,0,0,0.2)'
+                    boxShadow: isSOS
+                      ? "0 0 20px rgba(239, 68, 68, 0.6)"
+                      : isHovered
+                        ? "0 10px 25px rgba(0,0,0,0.3)"
+                        : "0 4px 10px rgba(0,0,0,0.2)",
                   }}
                 >
                   <TruckIcon className="h-4.5 w-4.5 text-white" />
-                  
+
                   {/* Direction Arrow */}
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                    <div className="h-0 w-0 border-x-[4px] border-x-transparent border-b-[6px] border-b-white opacity-80" />
+                    <div className="h-0 w-0 border-x-[4px] border-b-[6px] border-x-transparent border-b-white opacity-80" />
                   </div>
                 </div>
               </div>
@@ -302,16 +354,33 @@ function DashboardMapContent({
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Fleet Unit</span>
-                    <strong className="text-sm font-black text-white">DRV-{trip.id.split("-")[0].toUpperCase()}</strong>
+                    <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
+                      Fleet Unit
+                    </span>
+                    <strong className="text-sm font-black text-white">
+                      DRV-{trip.id.split("-")[0].toUpperCase()}
+                    </strong>
                   </div>
-                  <div 
+                  <div
                     className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
-                    style={{ backgroundColor: `${color}20`, color: color, border: `1px solid ${color}40` }}
+                    style={{
+                      backgroundColor: `${color}20`,
+                      color: color,
+                      border: `1px solid ${color}40`,
+                    }}
                   >
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className={cn("absolute inline-flex h-full w-full rounded-full opacity-75", isSOS ? "animate-ping" : "")} style={{ backgroundColor: color }}></span>
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }}></span>
+                      <span
+                        className={cn(
+                          "absolute inline-flex h-full w-full rounded-full opacity-75",
+                          isSOS ? "animate-ping" : ""
+                        )}
+                        style={{ backgroundColor: color }}
+                      ></span>
+                      <span
+                        className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: color }}
+                      ></span>
                     </span>
                     {formatTripStatus(trip.status)}
                   </div>
@@ -320,45 +389,62 @@ function DashboardMapContent({
                 {/* Logistics Info */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Asset</span>
+                    <span className="text-[9px] font-bold tracking-wide text-zinc-500 uppercase">
+                      Asset
+                    </span>
                     <div className="flex items-center gap-1.5">
                       <div className="flex h-5 w-5 items-center justify-center rounded bg-white/5">
                         <Package className="h-3 w-3 text-zinc-400" />
                       </div>
-                      <span className="text-[11px] font-medium text-zinc-200 truncate">{trip.order.resource?.name || 'Bulk Cargo'}</span>
+                      <span className="truncate text-[11px] font-medium text-zinc-200">
+                        {trip.order.resource?.name || "Bulk Cargo"}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">Priority</span>
-                    <div 
+                    <span className="text-[9px] font-bold tracking-wide text-zinc-500 uppercase">
+                      Priority
+                    </span>
+                    <div
                       className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5"
                       style={{ backgroundColor: `${priorityColor}15` }}
                     >
-                      <Zap className="h-3 w-3" style={{ color: priorityColor }} />
-                      <span className="text-[10px] font-bold" style={{ color: priorityColor }}>{formatPriorityLevel(trip.order.priority)}</span>
+                      <Zap
+                        className="h-3 w-3"
+                        style={{ color: priorityColor }}
+                      />
+                      <span
+                        className="text-[10px] font-bold"
+                        style={{ color: priorityColor }}
+                      >
+                        {formatPriorityLevel(trip.order.priority)}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Tracking Progress */}
-                <div className="mt-1 space-y-1.5 rounded-lg bg-white/5 p-2 border border-white/5">
+                <div className="mt-1 space-y-1.5 rounded-lg border border-white/5 bg-white/5 p-2">
                   <div className="flex items-center justify-between text-[10px]">
                     <div className="flex items-center gap-1 text-zinc-400">
                       <Navigation className="h-2.5 w-2.5" />
                       <span>{providerName}</span>
                     </div>
                     <div className="flex flex-1 items-center px-2">
-                       <div className="h-[1px] flex-1 bg-zinc-700 relative">
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 h-1 w-1 rounded-full bg-zinc-500" />
-                          <div className="absolute left-1/3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full border border-zinc-900 shadow-md" style={{ backgroundColor: color }} />
-                       </div>
+                      <div className="relative h-[1px] flex-1 bg-zinc-700">
+                        <div className="absolute top-1/2 right-0 h-1 w-1 -translate-y-1/2 rounded-full bg-zinc-500" />
+                        <div
+                          className="absolute top-1/2 left-1/3 h-2 w-2 -translate-y-1/2 rounded-full border border-zinc-900 shadow-md"
+                          style={{ backgroundColor: color }}
+                        />
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 text-zinc-300">
                       <MapPin className="h-2.5 w-2.5" />
                       <span>{requesterName}</span>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center text-[9px] text-zinc-500 font-mono">
+                  <div className="flex items-center justify-between font-mono text-[9px] text-zinc-500">
                     <span>ETA: 14:30</span>
                     <span>HDG: {Math.round(rotation)}°</span>
                   </div>
@@ -366,13 +452,31 @@ function DashboardMapContent({
 
                 {/* Driver */}
                 {trip.driverName && (
-                   <div className="flex items-center gap-2 border-t border-white/5 pt-2">
-                      <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">
-                        {trip.driverName.charAt(0)}
-                      </div>
-                      <span className="text-[10px] text-zinc-400">Assigned Driver: <span className="text-zinc-200 font-medium">{trip.driverName}</span></span>
-                   </div>
+                  <div className="flex items-center gap-2 border-t border-white/5 pt-2">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[9px] font-bold text-primary">
+                      {trip.driverName.charAt(0)}
+                    </div>
+                    <span className="text-[10px] text-zinc-400">
+                      Assigned Driver:{" "}
+                      <span className="font-medium text-zinc-200">
+                        {trip.driverName}
+                      </span>
+                    </span>
+                  </div>
                 )}
+                <div className="mt-2 flex flex-col gap-1">
+                  {trip.status === "SOS" && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-full text-xs"
+                      onClick={() => onResolveSos(trip.id)}
+                      disabled={isResolvingSos}
+                    >
+                      Resolve SOS
+                    </Button>
+                  )}
+                </div>
               </div>
             </MarkerTooltip>
           </MapMarker>
@@ -449,13 +553,13 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
     <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-5 shadow-2xl antialiased">
       <div className="flex items-center justify-between border-b border-white/5 pb-3">
         <div>
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
+          <h3 className="text-xs font-black tracking-[0.2em] text-zinc-400 uppercase">
             Network Status
           </h3>
-          <p className="mt-0.5 text-[10px] font-medium text-primary flex items-center gap-1">
+          <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium text-primary">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span>
             </span>
             Live Deployment
           </p>
@@ -466,7 +570,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <div className="flex flex-col rounded-xl bg-white/5 p-2.5 border border-white/5 transition-colors hover:bg-white/10">
+        <div className="flex flex-col rounded-xl border border-white/5 bg-white/5 p-2.5 transition-colors hover:bg-white/10">
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
             <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
             Active
@@ -474,7 +578,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
           <span className="mt-1 text-2xl font-black text-white">{enRoute}</span>
         </div>
 
-        <div className="flex flex-col rounded-xl bg-zinc-900/50 p-2.5 border border-white/5 transition-colors hover:bg-white/10">
+        <div className="flex flex-col rounded-xl border border-white/5 bg-zinc-900/50 p-2.5 transition-colors hover:bg-white/10">
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
             <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
             Wait
@@ -482,17 +586,21 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
           <span className="mt-1 text-2xl font-black text-white">{pending}</span>
         </div>
 
-        <div className="flex flex-col rounded-xl bg-red-500/10 p-2.5 border border-red-500/20 transition-colors hover:bg-red-500/20">
+        <div className="flex flex-col rounded-xl border border-red-500/20 bg-red-500/10 p-2.5 transition-colors hover:bg-red-500/20">
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400">
             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
             SOS
           </div>
-          <span className="mt-1 text-2xl font-black text-red-500 leading-none">{sos}</span>
+          <span className="mt-1 text-2xl leading-none font-black text-red-500">
+            {sos}
+          </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2 border border-primary/20">
-        <span className="text-[10px] font-bold text-primary-foreground/70 uppercase tracking-wider">System Integrity</span>
+      <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-2">
+        <span className="text-[10px] font-bold tracking-wider text-primary-foreground/70 uppercase">
+          System Integrity
+        </span>
         <span className="text-[10px] font-black text-primary">OPTIMAL</span>
       </div>
     </div>
@@ -504,6 +612,16 @@ export default function DashboardPage() {
   const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
   const roadRoutes = useDashboardRoadRoutes({ baseTracks })
   const [hoveredTripId, setHoveredTripId] = useState<string | null>(null)
+  const [confirmTripId, setConfirmTripId] = useState<string | null>(null)
+
+  const { resolveSos, isResolvingSos, resolveSosError } = useTrips()
+
+  const handleSosConfirm = () => {
+    if (confirmTripId) {
+      resolveSos(confirmTripId)
+      setConfirmTripId(null)
+    }
+  }
 
   const table = useReactTable({
     data: activeTrips,
@@ -546,6 +664,8 @@ export default function DashboardPage() {
                   baseTracks={baseTracks}
                   hoveredTripId={hoveredTripId}
                   setHoveredTripId={setHoveredTripId}
+                  onResolveSos={(tripId) => setConfirmTripId(tripId)}
+                  isResolvingSos={isResolvingSos}
                 />
               </Map>
             </CardContent>
@@ -569,9 +689,9 @@ export default function DashboardPage() {
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -580,12 +700,15 @@ export default function DashboardPage() {
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row, i) => (
-                      <TableRow className={i % 2 === 0 ? "bg-muted/50" : ""} key={row.id}>
+                      <TableRow
+                        className={i % 2 === 0 ? "bg-muted/50" : ""}
+                        key={row.id}
+                      >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext(),
+                              cell.getContext()
                             )}
                           </TableCell>
                         ))}
@@ -631,6 +754,23 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* SOS Confirm Dialog */}
+        <SosConfirmDialog
+          open={!!confirmTripId}
+          onOpenChange={() => setConfirmTripId(null)}
+          onConfirm={handleSosConfirm}
+          isConfirming={isResolvingSos}
+        />
+
+        {/* SOS Error Banner */}
+        {resolveSosError && (
+          <div className="fixed right-4 bottom-4 z-50 rounded-lg bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {resolveSosError instanceof Error
+              ? resolveSosError.message
+              : String(resolveSosError)}
+          </div>
+        )}
       </div>
     </PageLoader>
   )
