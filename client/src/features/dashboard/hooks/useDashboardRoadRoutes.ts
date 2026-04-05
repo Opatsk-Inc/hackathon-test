@@ -9,7 +9,7 @@ import {
 } from "../utils/routing"
 
 const MAX_POINTS = 25
-const ROUTING_TIMEOUT_MS = 6000
+const ROUTING_TIMEOUT_MS = 12000
 
 // LRU cache for road routes
 const LRU_MAX_SIZE = 200
@@ -90,6 +90,13 @@ async function fetchRoadRoute(
     const coords = data.routes[0].geometry.coordinates as LngLat[]
     lruSet(lk, coords)
     return coords
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(
+        `Routing request timed out after ${ROUTING_TIMEOUT_MS}ms for trip ${tripId}`
+      )
+    }
+    throw error
   } finally {
     clearTimeout(timeout)
   }

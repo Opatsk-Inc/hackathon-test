@@ -12,7 +12,8 @@ export function buildRoutingUrl(track: LngLat[]): string | null {
 
   const coordString = track.map(([lng, lat]) => `${lng},${lat}`).join(";")
 
-  return `${ROUTING_API_BASE}/route/v1/driving/${encodeURIComponent(coordString)}?overview=full&geometries=geojson`
+  // OSRM path segment must preserve comma/semicolon separators.
+  return `${ROUTING_API_BASE}/route/v1/driving/${coordString}?overview=full&geometries=geojson`
 }
 
 /**
