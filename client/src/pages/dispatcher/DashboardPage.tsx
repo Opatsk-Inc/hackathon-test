@@ -34,6 +34,7 @@ import {
   useDashboardRoadRoutes,
   useNonOverlappingMarkers,
 } from "@/features/dashboard"
+import { useTrips } from "@/features/trips/hooks/useTrips"
 import type { IWarehouse } from "@/shared/types"
 import type { IActiveTrip, LngLat } from "@/features/trips/types/trip.types"
 import {
@@ -41,6 +42,7 @@ import {
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
 import { formatTripStatus } from "@/features/trips/utils/trip.utils"
+import { SosConfirmDialog } from "@/components/ui/sos-confirm-dialog"
 
 const ROUTE_COLORS_BY_STATUS: Record<string, string> = {
   SOS: "#ef4444",
@@ -76,6 +78,8 @@ function DashboardMapContent({
   baseTracks,
   hoveredTripId,
   setHoveredTripId,
+  onResolveSos,
+  isResolvingSos,
 }: {
   warehouses: IWarehouse[]
   activeTrips: IActiveTrip[]
@@ -83,6 +87,8 @@ function DashboardMapContent({
   baseTracks: Record<string, LngLat[]>
   hoveredTripId: string | null
   setHoveredTripId: (id: string | null) => void
+  onResolveSos: (tripId: string) => void
+  isResolvingSos: boolean
 }) {
   const { map, isLoaded } = useMap()
 
@@ -224,7 +230,10 @@ function DashboardMapContent({
                 {trip.status === "SOS" && (
                   <div
                     className="absolute inset-0 z-0 animate-ping rounded-full opacity-75"
-                    style={{ backgroundColor: color, animationDuration: '1.5s' }}
+                    style={{
+                      backgroundColor: color,
+                      animationDuration: "1.5s",
+                    }}
                   />
                 )}
                 <div
@@ -247,27 +256,57 @@ function DashboardMapContent({
             </MarkerContent>
             <MarkerTooltip>
               <div className="flex min-w-56 flex-col gap-1.5 p-1">
-                <strong className="text-sm border-b pb-1">
-                  Driver {trip.driverName ? `(${trip.driverName})` : ''} · {formatTripStatus(trip.status)}
+                <strong className="border-b pb-1 text-sm">
+                  Driver {trip.driverName ? `(${trip.driverName})` : ""} ·{" "}
+                  {formatTripStatus(trip.status)}
                 </strong>
                 <div className="flex flex-col gap-0.5 text-xs">
                   <span className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">Route:</span> {providerName} → {requesterName}
+                    <span className="font-semibold text-foreground">
+                      Route:
+                    </span>{" "}
+                    {providerName} → {requesterName}
                   </span>
                   <span className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">Priority:</span> 
-                    <span className={`ml-1 font-semibold ${
-                      trip.order.priority === 'CRITICAL' ? 'text-red-500' :
-                      trip.order.priority === 'HIGH' ? 'text-orange-500' : 'text-blue-500'
-                    }`}>
+                    <span className="font-semibold text-foreground">
+                      Priority:
+                    </span>
+                    <span
+                      className={`ml-1 font-semibold ${
+                        trip.order.priority === "CRITICAL"
+                          ? "text-red-500"
+                          : trip.order.priority === "HIGH"
+                            ? "text-orange-500"
+                            : "text-blue-500"
+                      }`}
+                    >
                       {formatPriorityLevel(trip.order.priority)}
                     </span>
                   </span>
                   <span className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">Cargo:</span> {trip.order.resource?.name ?? 'Unknown'} <span className="font-mono bg-muted px-1 rounded">x{trip.order.quantity}</span>
+                    <span className="font-semibold text-foreground">
+                      Cargo:
+                    </span>{" "}
+                    {trip.order.resource?.name ?? "Unknown"}{" "}
+                    <span className="rounded bg-muted px-1 font-mono">
+                      x{trip.order.quantity}
+                    </span>
                   </span>
                 </div>
-                <span className="font-mono text-[10px] text-muted-foreground/70 text-right mt-1">
+                <span className="mt-2 flex flex-col gap-1">
+                  {trip.status === "SOS" && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-full text-xs"
+                      onClick={() => onResolveSos(trip.id)}
+                      disabled={isResolvingSos}
+                    >
+                      Resolve SOS
+                    </Button>
+                  )}
+                </span>
+                <span className="mt-1 text-right font-mono text-[10px] text-muted-foreground/70">
                   Trip: {trip.id.split("-")[0]}
                 </span>
               </div>
@@ -345,10 +384,10 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
   return (
     <div className="absolute top-4 left-4 z-20 flex min-w-[300px] flex-col gap-3 rounded-xl border border-border/50 bg-background/95 p-4 shadow-md backdrop-blur-md">
       <div>
-        <h3 className="text-sm font-semibold leading-none tracking-tight">
+        <h3 className="text-sm leading-none font-semibold tracking-tight">
           Network Status
         </h3>
-        <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="mt-1 text-[10px] tracking-wider text-muted-foreground uppercase">
           Active Deliveries
         </p>
       </div>
@@ -359,7 +398,9 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
             <span className="h-2 w-2 rounded-full bg-blue-500" />
             En Route
           </div>
-          <span className="mt-[5px] text-lg font-bold leading-none">{enRoute}</span>
+          <span className="mt-[5px] text-lg leading-none font-bold">
+            {enRoute}
+          </span>
         </div>
 
         <div className="flex flex-col">
@@ -367,7 +408,9 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
             <span className="h-2 w-2 rounded-full bg-amber-500" />
             Pending
           </div>
-          <span className="mt-[5px] text-lg font-bold leading-none">{pending}</span>
+          <span className="mt-[5px] text-lg leading-none font-bold">
+            {pending}
+          </span>
         </div>
 
         <div className="flex flex-col">
@@ -375,7 +418,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
             <span className="h-2 w-2 animate-pulse rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
             SOS
           </div>
-          <span className="mt-[5px] text-lg font-bold leading-none">{sos}</span>
+          <span className="mt-[5px] text-lg leading-none font-bold">{sos}</span>
         </div>
       </div>
     </div>
@@ -387,6 +430,16 @@ export default function DashboardPage() {
   const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
   const roadRoutes = useDashboardRoadRoutes({ baseTracks })
   const [hoveredTripId, setHoveredTripId] = useState<string | null>(null)
+  const [confirmTripId, setConfirmTripId] = useState<string | null>(null)
+
+  const { resolveSos, isResolvingSos, resolveSosError } = useTrips()
+
+  const handleSosConfirm = () => {
+    if (confirmTripId) {
+      resolveSos(confirmTripId)
+      setConfirmTripId(null)
+    }
+  }
 
   const table = useReactTable({
     data: activeTrips,
@@ -429,6 +482,8 @@ export default function DashboardPage() {
                   baseTracks={baseTracks}
                   hoveredTripId={hoveredTripId}
                   setHoveredTripId={setHoveredTripId}
+                  onResolveSos={(tripId) => setConfirmTripId(tripId)}
+                  isResolvingSos={isResolvingSos}
                 />
               </Map>
             </CardContent>
@@ -452,9 +507,9 @@ export default function DashboardPage() {
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -463,12 +518,15 @@ export default function DashboardPage() {
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row, i) => (
-                      <TableRow className={i % 2 === 1 ? "bg-muted/50" : ""} key={row.id}>
+                      <TableRow
+                        className={i % 2 === 1 ? "bg-muted/50" : ""}
+                        key={row.id}
+                      >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext(),
+                              cell.getContext()
                             )}
                           </TableCell>
                         ))}
@@ -514,6 +572,23 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* SOS Confirm Dialog */}
+        <SosConfirmDialog
+          open={!!confirmTripId}
+          onOpenChange={() => setConfirmTripId(null)}
+          onConfirm={handleSosConfirm}
+          isConfirming={isResolvingSos}
+        />
+
+        {/* SOS Error Banner */}
+        {resolveSosError && (
+          <div className="fixed right-4 bottom-4 z-50 rounded-lg bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {resolveSosError instanceof Error
+              ? resolveSosError.message
+              : String(resolveSosError)}
+          </div>
+        )}
       </div>
     </PageLoader>
   )
