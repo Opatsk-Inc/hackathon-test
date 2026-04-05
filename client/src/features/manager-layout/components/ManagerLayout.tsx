@@ -36,7 +36,10 @@ export default function ManagerLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-x-hidden bg-background text-foreground">
+    <div
+      className="font-sans flex h-screen overflow-x-hidden bg-background text-foreground"
+      style={{ fontFamily: "var(--font-sans)" }}
+    >
       {/* Desktop sidebar */}
       <nav className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4 sm:flex">
         <Logo />
@@ -78,7 +81,7 @@ export default function ManagerLayout() {
       </nav>
 
       {/* Main content */}
-      <main className="min-w-0 flex-1 overflow-y-auto bg-background p-3 pb-20 sm:p-6">
+      <main className="min-w-0 flex-1 overflow-y-auto bg-background p-3 pb-20 sm:p-6 " >
         <header className="mb-4 flex items-center justify-end sm:mb-6 sm:hidden">
           <Button
             variant="ghost"
