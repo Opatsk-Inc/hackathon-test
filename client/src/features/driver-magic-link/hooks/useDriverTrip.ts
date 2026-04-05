@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { API_BASE } from "@/shared/api/http"
 import type { ITripWithOrder } from "../types"
 
 async function fetchTripByMagicToken(
   magicToken: string
 ): Promise<ITripWithOrder> {
-  const response = await fetch(`/api/driver/${magicToken}`)
+  const response = await fetch(`${API_BASE}/api/driver/${magicToken}`)
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "Unknown error")
@@ -15,7 +16,7 @@ async function fetchTripByMagicToken(
 }
 
 async function startTrip(magicToken: string): Promise<ITripWithOrder> {
-  const response = await fetch(`/api/driver/${magicToken}/start`, {
+  const response = await fetch(`${API_BASE}/api/driver/${magicToken}/start`, {
     method: "PATCH",
   })
 
@@ -28,7 +29,7 @@ async function startTrip(magicToken: string): Promise<ITripWithOrder> {
 }
 
 async function sendSos(magicToken: string): Promise<ITripWithOrder> {
-  const response = await fetch(`/api/driver/${magicToken}/sos`, {
+  const response = await fetch(`${API_BASE}/api/driver/${magicToken}/sos`, {
     method: "PATCH",
   })
 
@@ -41,7 +42,7 @@ async function sendSos(magicToken: string): Promise<ITripWithOrder> {
 }
 
 async function finishTrip(magicToken: string): Promise<ITripWithOrder> {
-  const response = await fetch(`/api/driver/${magicToken}/finish`, {
+  const response = await fetch(`${API_BASE}/api/driver/${magicToken}/finish`, {
     method: "PATCH",
   })
 
@@ -58,7 +59,7 @@ async function sendGps(
   lat: number,
   lng: number
 ): Promise<void> {
-  const response = await fetch(`/api/driver/${magicToken}/gps`, {
+  const response = await fetch(`${API_BASE}/api/driver/${magicToken}/gps`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ lat, lng }),

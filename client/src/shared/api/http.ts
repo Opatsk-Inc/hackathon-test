@@ -3,6 +3,8 @@
  */
 import { getToken, removeToken } from "./auth"
 
+export const API_BASE = import.meta.env.VITE_API_URL || ""
+
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const token = getToken()
 
@@ -13,7 +15,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     headers.set("Authorization", `Bearer ${token}`)
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(`${API_BASE}${url}`, {
     ...options,
     headers,
   })
