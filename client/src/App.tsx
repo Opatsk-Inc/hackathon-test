@@ -8,6 +8,8 @@ import RequestsPage from "@/pages/dispatcher/RequestsPage"
 import DriversPage from "@/pages/dispatcher/DriversPage"
 import LoginPage from "@/pages/auth/LoginPage"
 import SignUpPage from "@/pages/auth/SignUpPage"
+import WelcomePage from "@/pages/auth/WelcomePage"
+import SignUpRoleSelectPage from "@/pages/auth/SignUpRoleSelectPage"
 import { ManagerLayout } from "@/features/manager-layout"
 import ManagerResourcesPage from "@/pages/manager/ResourcesPage"
 import ManagerOrdersPage from "@/pages/manager/OrdersPage"
@@ -22,7 +24,9 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<WelcomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup/role" element={<SignUpRoleSelectPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route element={<RequireAuth allowedRoles={["DISPATCHER"]} />}>
           <Route path="dispatcher" element={<DispatcherLayout />}>

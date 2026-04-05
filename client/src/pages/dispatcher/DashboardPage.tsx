@@ -550,7 +550,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
   const pending = activeTrips.filter((t) => t.status === "PENDING").length
 
   return (
-    <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-5 shadow-2xl antialiased">
+    <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-5 antialiased shadow-2xl">
       <div className="flex items-center justify-between border-b border-white/5 pb-3">
         <div>
           <h3 className="text-xs font-black tracking-[0.2em] text-zinc-400 uppercase">
