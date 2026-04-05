@@ -132,30 +132,29 @@ export function ManagerLayout() {
         {/* Animated Tabs removed per requirements */}
 
         <div className="relative overflow-hidden">
-          <AnimatePresence mode="sync" initial={false}>
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
               initial={
                 prefersReducedMotion
                   ? { opacity: 1, x: 0 }
-                  : { opacity: 0, x: slideDirection > 0 ? 32 : -32 }
+                  : { opacity: 0, x: slideDirection > 0 ? 12 : -12 }
               }
               animate={{ opacity: 1, x: 0 }}
               exit={
                 prefersReducedMotion
                   ? { opacity: 1, x: 0 }
-                  : {
-                      opacity: 0,
-                      x: slideDirection > 0 ? -20 : 20,
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      pointerEvents: "none",
-                    }
+                  : { opacity: 0, x: slideDirection > 0 ? -8 : 8 }
               }
               transition={{
-                duration: prefersReducedMotion ? 0.01 : 0.26,
-                ease: [0.22, 1, 0.36, 1],
+                x: {
+                  duration: prefersReducedMotion ? 0.01 : 0.3,
+                  ease: [0.22, 1, 0.36, 1],
+                },
+                opacity: {
+                  duration: prefersReducedMotion ? 0.01 : 0.22,
+                  ease: [0.33, 1, 0.68, 1],
+                },
               }}
               style={{
                 width: "100%",
