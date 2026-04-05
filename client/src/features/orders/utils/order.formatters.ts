@@ -41,8 +41,8 @@ export const getOrderPriority = (order: IOrder) => {
 
 export const getOrderStatusVariant = (status: string) => {
   const s = status.toLowerCase()
-  if (s === "pending" || s === "en_route") return "pending"
-  if (s === "in_transit") return "in_transit"
+  if (s === "pending") return "pending"
+  if (s === "en_route" || s === "in_transit") return "active"
   if (s === "delivered") return "delivered"
   if (s === "sos" || s === "cancelled") return "destructive"
   return "outline"

@@ -97,7 +97,7 @@ export default function DispatcherLayout() {
               <div>
                 <p className="font-semibold text-foreground">Dispatcher</p>
                 <p className="text-sm text-muted-foreground">
-                  dispatcher@logitrack.com
+                  dispatcher@levtrans.com
                 </p>
               </div>
             </div>

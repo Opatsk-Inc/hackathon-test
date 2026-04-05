@@ -139,7 +139,7 @@ export function ManagerLayout() {
               <div>
                 <p className="font-semibold text-foreground">Manager</p>
                 <p className="text-sm text-muted-foreground">
-                  manager@logitrack.com
+                  manager@levtrans.com
                 </p>
               </div>
             </div>

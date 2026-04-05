@@ -9,6 +9,7 @@ import {
   Copy,
   Check,
 } from "lucide-react"
+import { formatTripStatus, getTripStatusVariant } from "@/features/trips/utils/trip.utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -165,7 +166,6 @@ export default function DriversPage() {
               ) : (
                 filteredTrips.map((trip: IActiveTrip, i: number) => {
                   const isSos = trip.status === "SOS"
-                  const isPending = trip.status === "PENDING"
 
                   return (
                     <TableRow
@@ -191,13 +191,9 @@ export default function DriversPage() {
                       </TableCell>
 
                       <TableCell>
-                        {isSos ? (
-                          <Badge variant="sos">SOS ERROR</Badge>
-                        ) : isPending ? (
-                          <Badge variant="outline">Waiting to start</Badge>
-                        ) : (
-                          <Badge variant="in_transit">In transit</Badge>
-                        )}
+                        <Badge variant={getTripStatusVariant(trip.status)}>
+                          {formatTripStatus(trip.status)}
+                        </Badge>
                       </TableCell>
 
                       <TableCell className="text-right">

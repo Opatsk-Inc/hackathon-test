@@ -17,8 +17,10 @@ const badgeVariants = cva(
         outline: "text-foreground",
         // Logistics status variants
         pending: "border-transparent bg-amber-400/10 text-amber-500 hover:bg-amber-400/20",
+        wait: "border-transparent bg-amber-400/10 text-amber-500 hover:bg-amber-400/20",
         picked_up: "border-transparent bg-sky-400/10 text-sky-500 hover:bg-sky-400/20",
-        in_transit: "border-transparent bg-indigo-400/10 text-indigo-500 hover:bg-indigo-400/20",
+        in_transit: "border-transparent bg-blue-400/10 text-blue-500 hover:bg-blue-400/20",
+        active: "border-transparent bg-blue-400/10 text-blue-500 hover:bg-blue-400/20",
         delivered: "border-transparent bg-emerald-400/10 text-emerald-500 hover:bg-emerald-400/20",
         // Urgency variants
         normal: "border-transparent bg-zinc-500/10 text-zinc-400",

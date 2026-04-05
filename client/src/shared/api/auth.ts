@@ -6,7 +6,7 @@
 
 import type { Role } from "@/shared/types"
 
-const TOKEN_KEY = "logitrack_token"
+const TOKEN_KEY = "levtrans_token"
 
 /** Decode base64url segment safely */
 function decodeBase64Url(str: string): string {

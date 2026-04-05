@@ -51,7 +51,7 @@ import {
   formatPriorityLevel,
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
-import { formatTripStatus } from "@/features/trips/utils/trip.utils"
+import { formatTripStatus, getTripStatusVariant } from "@/features/trips/utils/trip.utils"
 import { SosConfirmDialog } from "@/components/ui/sos-confirm-dialog"
 
 const ROUTE_COLORS_BY_STATUS: Record<string, string> = {
@@ -507,7 +507,7 @@ const columns: ColumnDef<IActiveTrip>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant={row.original.status === "SOS" ? "sos" : "in_transit"}>
+      <Badge variant={getTripStatusVariant(row.original.status)}>
         {formatTripStatus(row.original.status)}
       </Badge>
     ),

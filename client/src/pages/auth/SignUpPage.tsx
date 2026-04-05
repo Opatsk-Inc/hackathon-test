@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import logo from "@/assets/ЛевчикТранс.svg"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -81,8 +82,9 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
       <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 animate-in fade-in zoom-in duration-300">
-        <div className="mb-6 flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">LogiTrack</h1>
+        <div className="mb-6 flex flex-col items-center space-y-4 text-center">
+          <img src={logo} alt="Levtrans Logo" className="h-16 w-auto" />
+          <h1 className="text-2xl font-bold tracking-tight">Levtrans</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Create an account to get started
           </p>
