@@ -138,7 +138,7 @@ export default function InventoryPage() {
           <Card className="border-amber-200 bg-amber-50 shadow-sm dark:border-amber-800/30 dark:bg-amber-900/10">
             <CardContent className="flex items-start gap-2 py-3 text-sm text-amber-800 dark:text-amber-200">
               <Edit2 className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="break-words">
+              <span className="wrap-break-word">
                 Натисніть для зміни кількості.
               </span>
             </CardContent>
