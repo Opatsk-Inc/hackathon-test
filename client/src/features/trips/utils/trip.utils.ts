@@ -7,14 +7,14 @@ export const filterTripsByStatus = (trips: ITrip[], status: string) => {
   )
 }
 
-// Форматування
+// Formatting
 export const formatTripStatus = (status: string) => {
   const s = status.toLowerCase()
-  if (s === "scheduled") return "Заплановано"
-  if (s === "in_transit" || s === "en_route") return "В дорозі"
-  if (s === "completed") return "Завершено"
+  if (s === "scheduled") return "Scheduled"
+  if (s === "in_transit" || s === "en_route") return "En Route"
+  if (s === "completed") return "Completed"
   if (s === "sos") return "SOS"
-  if (s === "cancelled") return "Скасовано"
+  if (s === "cancelled") return "Cancelled"
   return status
 }
 
