@@ -220,21 +220,29 @@ function DashboardMapContent({
             rotationAlignment="map"
           >
             <MarkerContent>
-              <div
-                className={
-                  "flex h-8 w-8 items-center justify-center rounded-full border-2 border-white shadow-lg transition-transform duration-200 " +
-                  (isHovered
-                    ? "scale-125 ring-4 ring-primary/30"
-                    : "hover:scale-110")
-                }
-                style={{
-                  backgroundColor: color,
-                  zIndex: isHovered ? 10 : 1,
-                }}
-                onMouseEnter={() => setHoveredTripId(trip.id)}
-                onMouseLeave={() => setHoveredTripId(null)}
-              >
-                <TruckIcon className="h-4 w-4 text-white" />
+              <div className="relative">
+                {trip.status === "SOS" && (
+                  <div
+                    className="absolute inset-0 z-0 animate-ping rounded-full opacity-75"
+                    style={{ backgroundColor: color, animationDuration: '1.5s' }}
+                  />
+                )}
+                <div
+                  className={
+                    "relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white shadow-lg transition-transform duration-200 " +
+                    (isHovered
+                      ? "scale-125 ring-4 ring-primary/30"
+                      : "hover:scale-110")
+                  }
+                  style={{
+                    backgroundColor: color,
+                    zIndex: isHovered ? 10 : 1,
+                  }}
+                  onMouseEnter={() => setHoveredTripId(trip.id)}
+                  onMouseLeave={() => setHoveredTripId(null)}
+                >
+                  <TruckIcon className="h-4 w-4 text-white" />
+                </div>
               </div>
             </MarkerContent>
             <MarkerTooltip>
@@ -313,6 +321,51 @@ const columns: ColumnDef<IActiveTrip>[] = [
   },
 ]
 
+function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
+  const enRoute = activeTrips.filter((t) => t.status === "EN_ROUTE").length
+  const sos = activeTrips.filter((t) => t.status === "SOS").length
+  const pending = activeTrips.filter((t) => t.status === "PENDING").length
+
+  return (
+    <div className="absolute top-4 left-4 z-20 flex min-w-[300px] flex-col gap-3 rounded-xl border border-border/50 bg-background/95 p-4 shadow-md backdrop-blur-md">
+      <div>
+        <h3 className="text-sm font-semibold leading-none tracking-tight">
+          Network Status
+        </h3>
+        <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+          Active Deliveries
+        </p>
+      </div>
+
+      <div className="mt-1 flex items-center justify-between">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            En Route
+          </div>
+          <span className="mt-[5px] text-lg font-bold leading-none">{enRoute}</span>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            Pending
+          </div>
+          <span className="mt-[5px] text-lg font-bold leading-none">{pending}</span>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+            SOS
+          </div>
+          <span className="mt-[5px] text-lg font-bold leading-none">{sos}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const { warehouses, activeTrips, error, isLoading } = useDashboard()
   const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
@@ -351,6 +404,7 @@ export default function DashboardPage() {
           {/* Map */}
           <Card className="relative min-h-125 w-full overflow-hidden border-dashed bg-muted/10 shadow-none">
             <CardContent className="absolute inset-0 p-0">
+              <MapStatsOverlay activeTrips={activeTrips} />
               <Map center={[31.1656, 48.3794]} zoom={5}>
                 <DashboardMapContent
                   warehouses={warehouses}
