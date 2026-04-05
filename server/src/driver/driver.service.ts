@@ -6,9 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateGpsDto } from './dto';
 
+import { RealtimeService } from '../common/realtime.service';
+
 @Injectable()
 export class DriverService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   private async getTripByToken(magicToken: string) {
     const trip = await this.prisma.trip.findUnique({
@@ -63,7 +68,7 @@ export class DriverService {
       });
 
       // Update trip to EN_ROUTE
-      return tx.trip.update({
+      const updatedTrip = await tx.trip.update({
         where: { id: trip.id },
         data: { status: 'EN_ROUTE' },
         include: {
@@ -72,13 +77,16 @@ export class DriverService {
           },
         },
       });
+
+      this.realtimeService.emit('TRIP_STARTED', updatedTrip);
+      return updatedTrip;
     });
   }
 
   async updateGps(magicToken: string, dto: UpdateGpsDto) {
     const trip = await this.getTripByToken(magicToken);
 
-    return this.prisma.trip.update({
+    const updatedTrip = await this.prisma.trip.update({
       where: { id: trip.id },
       data: {
         currentLat: dto.lat,
@@ -91,6 +99,14 @@ export class DriverService {
         },
       },
     });
+
+    this.realtimeService.emit('GPS_UPDATED', {
+      tripId: trip.id,
+      lat: dto.lat,
+      lng: dto.lng,
+    });
+
+    return updatedTrip;
   }
 
   async reportSos(magicToken: string) {
@@ -102,7 +118,7 @@ export class DriverService {
       );
     }
 
-    return this.prisma.trip.update({
+    const updatedTrip = await this.prisma.trip.update({
       where: { id: trip.id },
       data: { status: 'SOS' },
       include: {
@@ -111,6 +127,9 @@ export class DriverService {
         },
       },
     });
+
+    this.realtimeService.emit('SOS_REPORTED', updatedTrip);
+    return updatedTrip;
   }
 
   async finishTrip(magicToken: string) {
@@ -148,7 +167,7 @@ export class DriverService {
       });
 
       // Update trip to DELIVERED
-      return tx.trip.update({
+      const finishedTrip = await tx.trip.update({
         where: { id: trip.id },
         data: { status: 'DELIVERED' },
         include: {
@@ -157,6 +176,9 @@ export class DriverService {
           },
         },
       });
+
+      this.realtimeService.emit('TRIP_FINISHED', finishedTrip);
+      return finishedTrip;
     });
   }
 }

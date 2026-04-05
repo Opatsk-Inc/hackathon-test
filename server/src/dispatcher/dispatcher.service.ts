@@ -6,9 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ApproveOrderDto } from './dto/approve-order.dto';
 
+import { RealtimeService } from '../common/realtime.service';
+
 @Injectable()
 export class DispatcherService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   async getAllWarehouses() {
     return this.prisma.warehouse.findMany({
@@ -119,7 +124,7 @@ export class DispatcherService {
         },
       });
 
-      return {
+      const result = {
         order: updatedOrder,
         trip: {
           id: trip.id,
@@ -129,6 +134,9 @@ export class DispatcherService {
         },
         magicLink: `/api/driver/${trip.magicToken}`,
       };
+
+      this.realtimeService.emit('ORDER_APPROVED', result);
+      return result;
     });
   }
 
@@ -186,9 +194,13 @@ export class DispatcherService {
       });
 
       // Cancel / delete the trip
-      return tx.trip.delete({
+      const deletedTrip = await tx.trip.delete({
         where: { id: tripId },
       });
+
+      this.realtimeService.emit('SOS_RESOLVED', { tripId });
+
+      return deletedTrip;
     });
   }
 
