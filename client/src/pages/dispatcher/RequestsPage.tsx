@@ -11,6 +11,7 @@ import {
   Copy,
   ExternalLink,
   Check,
+  AlertTriangle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,7 @@ export default function RequestsPage() {
   } = useOrders()
 
   const [approveOrderId, setApproveOrderId] = useState<string | null>(null)
+  const [rejectOrderId, setRejectOrderId] = useState<string | null>(null)
   const [driverName, setDriverName] = useState("")
   const [magicLinkData, setMagicLinkData] = useState<{ link: string } | null>(
     null
@@ -93,6 +95,15 @@ export default function RequestsPage() {
         },
       }
     )
+  }
+
+  const handleRejectConfirm = () => {
+    if (!rejectOrderId) return
+    rejectOrder(rejectOrderId, {
+      onSuccess: () => {
+        setRejectOrderId(null)
+      },
+    })
   }
 
   if (error) {
@@ -185,11 +196,7 @@ export default function RequestsPage() {
                       variant="destructive"
                       size="sm"
                       className="w-full"
-                      onClick={() => {
-                        if (confirm("Are you sure you want to reject this request?")) {
-                          rejectOrder(r.id)
-                        }
-                      }}
+                      onClick={() => setRejectOrderId(r.id)}
                       disabled={isRejecting}
                     >
                       {isRejecting ? "Rejecting..." : "Reject"}
@@ -321,6 +328,40 @@ export default function RequestsPage() {
                   Open Link
                 </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={!!rejectOrderId}
+          onOpenChange={(open) => !open && setRejectOrderId(null)}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Reject Request
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to reject this request? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4 gap-2 sm:justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setRejectOrderId(null)}
+                disabled={isRejecting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleRejectConfirm}
+                disabled={isRejecting}
+              >
+                {isRejecting ? "Rejecting..." : "Reject Request"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
