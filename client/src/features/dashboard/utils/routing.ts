@@ -17,24 +17,86 @@ export function buildRoutingUrl(track: LngLat[]): string | null {
 }
 
 /**
- * Downsample a track to a maximum number of points while preserving endpoints.
- * Uses simple uniform sampling for long tracks.
+ * Calculate the perpendicular distance from point p to line segment [p1, p2].
+ */
+function perpendicularDistance(p: LngLat, p1: LngLat, p2: LngLat): number {
+  const [x, y] = p
+  const [x1, y1] = p1
+  const [x2, y2] = p2
+
+  const dx = x2 - x1
+  const dy = y2 - y1
+
+  if (dx === 0 && dy === 0) {
+    const ddx = x - x1
+    const ddy = y - y1
+    return Math.sqrt(ddx * ddx + ddy * ddy)
+  }
+
+  const t = ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)
+  let closestX = x1
+  let closestY = y1
+
+  if (t > 0) {
+    if (t < 1) {
+      closestX = x1 + t * dx
+      closestY = y1 + t * dy
+    } else {
+      closestX = x2
+      closestY = y2
+    }
+  }
+
+  const finalDx = x - closestX
+  const finalDy = y - closestY
+  return Math.sqrt(finalDx * finalDx + finalDy * finalDy)
+}
+
+/**
+ * Downsample a track using Douglas-Peucker algorithm while enforcing a max boundary.
+ * It's optimal for preserving the curve shape.
  */
 export function downsampleTrack(
   track: LngLat[],
-  maxPoints: number = 25
+  maxPoints: number = 25,
+  epsilon: number = 0.001
 ): LngLat[] {
   if (track.length <= maxPoints) return track
 
-  const step = (track.length - 1) / (maxPoints - 1)
-  const result: LngLat[] = []
+  // Helper function for Douglas-Peucker
+  function douglasPeucker(pts: LngLat[], eps: number): LngLat[] {
+    if (pts.length <= 2) return pts
 
-  for (let i = 0; i < maxPoints; i++) {
-    const idx = Math.round(i * step)
-    result.push(track[idx])
+    let dmax = 0
+    let index = 0
+    const end = pts.length - 1
+
+    for (let i = 1; i < end; i++) {
+        const d = perpendicularDistance(pts[i], pts[0], pts[end])
+        if (d > dmax) {
+            index = i
+            dmax = d
+        }
+    }
+
+    if (dmax > eps) {
+        const recResults1 = douglasPeucker(pts.slice(0, index + 1), eps)
+        const recResults2 = douglasPeucker(pts.slice(index), eps)
+        return recResults1.slice(0, recResults1.length - 1).concat(recResults2)
+    } else {
+        return [pts[0], pts[end]]
+    }
   }
 
-  return result
+  let simplified = douglasPeucker(track, epsilon)
+
+  // If we still have too many points, dynamically increase epsilon (or just slice but keeping endpoints)
+  while (simplified.length > maxPoints) {
+    epsilon *= 1.5
+    simplified = douglasPeucker(track, epsilon)
+  }
+
+  return simplified
 }
 
 /**

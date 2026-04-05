@@ -1,1 +1,1 @@
-export { default } from "./components/ManagerLayout"
+export { ManagerLayout } from "./components/ManagerLayout.tsx";

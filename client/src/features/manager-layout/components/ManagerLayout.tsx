@@ -27,7 +27,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ClipboardCheck,
 }
 
-export default function ManagerLayout() {
+export function ManagerLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleLogout = () => {

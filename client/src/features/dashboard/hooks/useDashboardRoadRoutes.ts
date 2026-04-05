@@ -8,7 +8,7 @@ import {
   trackSignature,
 } from "../utils/routing"
 
-const MAX_POINTS = 25
+const MAX_POINTS = 90
 const ROUTING_TIMEOUT_MS = 12000
 
 // LRU cache for road routes

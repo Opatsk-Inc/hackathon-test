@@ -246,12 +246,28 @@ function DashboardMapContent({
               </div>
             </MarkerContent>
             <MarkerTooltip>
-              <div className="flex min-w-48 flex-col gap-1">
-                <strong className="text-sm">Driver · {trip.status}</strong>
-                <span className="text-xs text-muted-foreground">
-                  Route: {providerName} → {requesterName}
-                </span>
-                <span className="font-mono text-xs text-muted-foreground">
+              <div className="flex min-w-56 flex-col gap-1.5 p-1">
+                <strong className="text-sm border-b pb-1">
+                  Driver {trip.driverName ? `(${trip.driverName})` : ''} · {formatTripStatus(trip.status)}
+                </strong>
+                <div className="flex flex-col gap-0.5 text-xs">
+                  <span className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">Route:</span> {providerName} → {requesterName}
+                  </span>
+                  <span className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">Priority:</span> 
+                    <span className={`ml-1 font-semibold ${
+                      trip.order.priority === 'CRITICAL' ? 'text-red-500' :
+                      trip.order.priority === 'HIGH' ? 'text-orange-500' : 'text-blue-500'
+                    }`}>
+                      {formatPriorityLevel(trip.order.priority)}
+                    </span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">Cargo:</span> {trip.order.resource?.name ?? 'Unknown'} <span className="font-mono bg-muted px-1 rounded">x{trip.order.quantity}</span>
+                  </span>
+                </div>
+                <span className="font-mono text-[10px] text-muted-foreground/70 text-right mt-1">
                   Trip: {trip.id.split("-")[0]}
                 </span>
               </div>
