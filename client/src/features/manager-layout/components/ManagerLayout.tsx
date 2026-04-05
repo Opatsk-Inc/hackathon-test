@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { NavLink, Outlet } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { useLocation, NavLink, Outlet } from "react-router-dom"
 import {
   Settings,
   User,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { removeToken } from "@/shared/api/auth"
 import { OfflineBanner } from "@/components/OfflineBanner"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Package,
@@ -28,8 +29,35 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ClipboardCheck,
 }
 
+const MANAGER_ROUTE_ORDER = [
+  "/manager",
+  "/manager/orders",
+  "/manager/replenish",
+  "/manager/inventory",
+]
+
+function getManagerRouteIndex(pathname: string): number {
+  if (pathname === "/manager" || pathname === "/manager/resources") {
+    return 0
+  }
+
+  const index = MANAGER_ROUTE_ORDER.findIndex((route) => route === pathname)
+  return index === -1 ? 0 : index
+}
+
 export function ManagerLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const location = useLocation()
+  const prefersReducedMotion = useReducedMotion()
+  const currentRouteIndex = getManagerRouteIndex(location.pathname)
+  const previousRouteIndexRef = useRef(currentRouteIndex)
+
+  const slideDirection =
+    currentRouteIndex >= previousRouteIndexRef.current ? 1 : -1
+
+  useEffect(() => {
+    previousRouteIndexRef.current = currentRouteIndex
+  }, [currentRouteIndex])
 
   const handleLogout = () => {
     removeToken()
@@ -51,21 +79,27 @@ export function ManagerLayout() {
             const Icon =
               ICON_MAP[item.icon as keyof typeof ICON_MAP] || (() => null)
             return (
-              <NavLink
+              <motion.div
                 key={item.to}
-                to={item.to}
-                end={item.to === "/manager"}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2.5 text-sm no-underline transition-colors ${
-                    isActive
-                      ? "border-r-[3px] border-primary bg-muted font-semibold text-foreground"
-                      : "border-r-[3px] border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                  }`
-                }
+                whileHover={{ x: 2 }}
+                whileTap={{ x: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </NavLink>
+                <NavLink
+                  to={item.to}
+                  end={item.to === "/manager"}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2.5 text-sm no-underline transition-colors ${
+                      isActive
+                        ? "border-r-[3px] border-primary bg-muted font-semibold text-foreground"
+                        : "border-r-[3px] border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </NavLink>
+              </motion.div>
             )
           })}
         </div>
@@ -94,7 +128,44 @@ export function ManagerLayout() {
             <Settings className="h-5 w-5" />
           </Button>
         </header>
-        <Outlet />
+
+        {/* Animated Tabs removed per requirements */}
+
+        <div className="relative overflow-hidden">
+          <AnimatePresence mode="sync" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={
+                prefersReducedMotion
+                  ? { opacity: 1, x: 0 }
+                  : { opacity: 0, x: slideDirection > 0 ? 32 : -32 }
+              }
+              animate={{ opacity: 1, x: 0 }}
+              exit={
+                prefersReducedMotion
+                  ? { opacity: 1, x: 0 }
+                  : {
+                      opacity: 0,
+                      x: slideDirection > 0 ? -20 : 20,
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      pointerEvents: "none",
+                    }
+              }
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.26,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{
+                width: "100%",
+                willChange: "opacity, transform",
+              }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
 
       {/* Mobile bottom navigation (horizontal scroll) */}

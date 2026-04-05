@@ -4,7 +4,6 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/space-grotesk";
 
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -40,7 +39,8 @@
   --sidebar-accent-foreground: #202020;
   --sidebar-border: #dfdfdf;
   --sidebar-ring: #008a50;
-  --font-sans: "Space Grotesk Variable", Outfit, ui-sans-serif, sans-serif, system-ui;
+  --font-sans:
+    "Space Grotesk Variable", Outfit, ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: monospace;
   --radius: 0.5rem;
@@ -52,11 +52,16 @@
   --shadow-color: #000000;
   --shadow-2xs: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-sm:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0.025em;
   --spacing: 0.25rem;
@@ -95,7 +100,8 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #292929;
   --sidebar-ring: #008a50;
-  --font-sans: "Space Grotesk Variable", Outfit, ui-sans-serif, sans-serif, system-ui;
+  --font-sans:
+    "Space Grotesk Variable", Outfit, ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: monospace;
   --radius: 0.5rem;
@@ -107,11 +113,16 @@
   --shadow-color: #000000;
   --shadow-2xs: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-sm:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl:
+    0px 1px 5.5px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 1px 5.5px 0px hsl(0 0% 0% / 0.25);
 }
 
@@ -328,13 +339,44 @@
 }
 /* --- MapLibre Popup Resets ---------------------------------- */
 
-.maplibregl-popup-content {
-  background: transparent !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
+/* Animated Tabs */
+.animate-tabs-indicator {
+  @apply bg-primary;
 }
 
-.maplibregl-popup-tip {
-  display: none !important;
+.animate-tabs-trigger {
+  @apply transition-colors duration-300;
+}
+
+/* Animated Tabs Mobile Scroll */
+.animate-tabs-container {
+  @apply overflow-x-auto overflow-y-hidden;
+  /* Приховати скролбар, але зберегти функційність */
+  scrollbar-width: none;
+}
+
+.animate-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* На мобайлі - компактніші таби */
+@media (max-width: 640px) {
+  .animate-tabs-trigger {
+    @apply px-2 py-2 text-sm;
+  }
+
+  .animate-tabs-trigger span {
+    @apply truncate;
+  }
+}
+
+/* На десктопі - розподілені по ширині */
+@media (min-width: 641px) {
+  .animate-tabs-list {
+    @apply grid gap-0;
+  }
+
+  .animate-tabs-trigger {
+    @apply px-4 py-3;
+  }
 }

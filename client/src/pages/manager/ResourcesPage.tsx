@@ -201,7 +201,7 @@ export default function ResourcesPage() {
         />
 
         {/* Quick Filters (Segmented Controls) */}
-        <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <div className="flex gap-1 rounded-lg bg-muted p-1 md:p-2.5">
           {[
             { value: "all" as QuickFilter, label: "All" },
             { value: "critical" as QuickFilter, label: "Critical" },
@@ -212,7 +212,7 @@ export default function ResourcesPage() {
               key={opt.value}
               type="button"
               onClick={() => setQuickFilter(opt.value)}
-              className={`flex-1 rounded-md px-3 py-0.5 text-xs font-medium transition-all ${
+              className={`md: flex-1 rounded-md px-3 py-0.5 text-xs font-medium transition-all md:px-2 md:py-2.5 ${
                 quickFilter === opt.value
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
