@@ -297,7 +297,7 @@ function DashboardMapContent({
                 </div>
               </div>
             </MarkerContent>
-            <MarkerTooltip className="border-white/10 !bg-zinc-950/90 !backdrop-blur-xl">
+            <MarkerTooltip className="min-w-64 border-white/10">
               <div className="flex min-w-64 flex-col gap-2.5 p-2">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
@@ -446,7 +446,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
   const pending = activeTrips.filter((t) => t.status === "PENDING").length
 
   return (
-    <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl backdrop-blur-xl">
+    <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-5 shadow-2xl antialiased">
       <div className="flex items-center justify-between border-b border-white/5 pb-3">
         <div>
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">

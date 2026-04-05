@@ -176,9 +176,9 @@ export default function RequestsPage() {
                       Accept
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="destructive"
                       size="sm"
-                      className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      className="w-full"
                     >
                       Reject
                     </Button>
