@@ -12,6 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+import { Button } from "@/components/ui/button"
+import {
   Map,
   MapControls,
   MapMarker,
@@ -254,11 +262,74 @@ function DashboardMapContent({
   )
 }
 
+const columns: ColumnDef<IActiveTrip>[] = [
+  {
+    accessorKey: "id",
+    header: "ID",
+    cell: ({ row }) => (
+      <div className="font-mono text-xs font-bold">
+        {row.original.id.split("-")[0].toUpperCase()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Статус",
+    cell: ({ row }) => (
+      <Badge variant={row.original.status === "SOS" ? "sos" : "in_transit"}>
+        {formatTripStatus(row.original.status)}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "origin",
+    header: "Звідки",
+    cell: ({ row }) => (
+      <div className="text-xs">
+        {row.original.order.provider?.name || "Невідомо"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "destination",
+    header: "Куди",
+    cell: ({ row }) => (
+      <div className="text-xs">
+        {row.original.order.requester?.name || "Невідомо"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "priority",
+    header: "Терміновість",
+    cell: ({ row }) => {
+      const priority = row.original.order.priority || "NORMAL"
+      return (
+        <Badge variant={getPriorityVariant(priority)}>
+          {formatPriorityLevel(priority)}
+        </Badge>
+      )
+    },
+  },
+]
+
 export default function DashboardPage() {
   const { warehouses, activeTrips, error, isLoading } = useDashboard()
   const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
   const roadRoutes = useDashboardRoadRoutes({ baseTracks })
   const [hoveredTripId, setHoveredTripId] = useState<string | null>(null)
+
+  const table = useReactTable({
+    data: activeTrips,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
+  })
 
   if (error) {
     return (
@@ -304,48 +375,39 @@ export default function DashboardPage() {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-24">ID</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Звідки</TableHead>
-                    <TableHead>Куди</TableHead>
-                    <TableHead>Терміновість</TableHead>
-                  </TableRow>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
                 </TableHeader>
                 <TableBody>
-                  {activeTrips.slice(0, 5).map((trip: IActiveTrip) => {
-                    const order = trip.order
-                    const status = trip.status
-                    const from = order.provider?.name || "Невідомо"
-                    const to = order.requester?.name || "Невідомо"
-                    const priority = order.priority || "NORMAL"
-
-                    return (
-                      <TableRow key={trip.id}>
-                        <TableCell className="font-mono text-xs font-bold">
-                          {trip.id.split("-")[0].toUpperCase()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={status === "SOS" ? "sos" : "in_transit"}
-                          >
-                            {formatTripStatus(status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs">{from}</TableCell>
-                        <TableCell className="text-xs">{to}</TableCell>
-                        <TableCell>
-                          <Badge variant={getPriorityVariant(priority)}>
-                            {formatPriorityLevel(priority)}
-                          </Badge>
-                        </TableCell>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
                       </TableRow>
-                    )
-                  })}
-                  {activeTrips.length === 0 && (
+                    ))
+                  ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={columns.length}
                         className="py-6 text-center text-muted-foreground"
                       >
                         Немає активних замовлень
@@ -354,6 +416,31 @@ export default function DashboardPage() {
                   )}
                 </TableBody>
               </Table>
+              {/* Pagination controls */}
+              <div className="flex items-center justify-between border-t px-4 py-3">
+                <div className="text-sm text-muted-foreground">
+                  Сторінка {table.getState().pagination.pageIndex + 1} з{" "}
+                  {table.getPageCount()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    disabled={!table.getCanPreviousPage()}
+                    onClick={() => table.previousPage()}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Назад
+                  </Button>
+                  <Button
+                    disabled={!table.getCanNextPage()}
+                    onClick={() => table.nextPage()}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Вперед
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
