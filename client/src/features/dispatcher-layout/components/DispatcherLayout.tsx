@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { removeToken } from "@/shared/api/auth"
+import { OfflineBanner } from "@/components/OfflineBanner"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -39,6 +40,7 @@ export default function DispatcherLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
+      <OfflineBanner />
       <nav className="flex w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4">
         <Logo />
 

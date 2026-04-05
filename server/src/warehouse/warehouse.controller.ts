@@ -24,7 +24,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Usr } from '../user/user.decorator';
 import type { AuthUser } from '../auth/auth-user';
 import { WarehouseService } from './warehouse.service';
-import { AdjustInventoryDto, CreateOrderDto } from './dto';
+import { AdjustInventoryDto, CreateOrderDto, UpdateOrderDto } from './dto';
 
 @ApiTags('warehouse')
 @ApiBearerAuth()
@@ -102,6 +102,24 @@ export class WarehouseController {
   ) {
     this.ensureWarehouse(user);
     return this.warehouseService.packOrder(orderId, user.warehouseId!);
+  }
+
+  @Patch('api/orders/:orderId')
+  @Roles(Role.WAREHOUSE_MANAGER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update an existing order (recalculate quantities)' })
+  @ApiResponse({ status: 200, description: 'Order updated and invetory recalculated' })
+  @ApiResponse({ status: 400, description: 'Invalid quantity or status' })
+  @ApiResponse({ status: 403, description: 'User does not belong to the requester warehouse' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiParam({ name: 'orderId', description: 'ID of the order to update' })
+  async updateOrder(
+    @Param('orderId') orderId: string,
+    @Usr() user: AuthUser,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    this.ensureWarehouse(user);
+    return this.warehouseService.updateOrder(orderId, user.warehouseId!, dto);
   }
 
   // ─── HELPERS ──────────────────────────────────────────────────────────────────

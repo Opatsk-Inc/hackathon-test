@@ -124,6 +124,7 @@ export function useMyOrders() {
     data: orders = [],
     isLoading,
     error,
+    refetch,
   } = useQuery<IOrder[]>({
     queryKey: ["manager", "my-orders"],
     queryFn: getMyOrders,
@@ -149,6 +150,7 @@ export function useMyOrders() {
     error,
     activeTab,
     setActiveTab,
+    refetch,
   }
 }
 

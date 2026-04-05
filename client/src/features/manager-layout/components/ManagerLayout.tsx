@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { removeToken } from "@/shared/api/auth"
+import { OfflineBanner } from "@/components/OfflineBanner"
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Package,
@@ -40,6 +41,7 @@ export function ManagerLayout() {
       className="flex h-screen overflow-x-hidden bg-background font-sans text-foreground"
       style={{ fontFamily: "var(--font-sans)" }}
     >
+      <OfflineBanner />
       {/* Desktop sidebar */}
       <nav className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4 sm:flex">
         <Logo />

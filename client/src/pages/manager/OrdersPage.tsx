@@ -6,6 +6,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageLoader } from "@/components/ui/loaders"
@@ -18,7 +19,9 @@ import {
   formatPriorityLevel,
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
+import { OrderEditDialog } from "@/features/orders/components/OrderEditDialog"
 import type { IOrder } from "@/shared/types"
+import { useState } from "react"
 
 function getSLABadge(order: IOrder) {
   const now = new Date()
@@ -74,7 +77,16 @@ export default function ManagerOrdersPage() {
     error,
     activeTab,
     setActiveTab,
+    refetch,
   } = useMyOrders()
+
+  const [editingOrder, setEditingOrder] = useState<IOrder | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  const handleEditClick = (order: IOrder) => {
+    setEditingOrder(order)
+    setIsEditDialogOpen(true)
+  }
 
   const pendingCount = allOrders.filter(
     (o) => o.status.toLowerCase() === "pending"
@@ -238,11 +250,34 @@ export default function ManagerOrdersPage() {
                       <span>{formatDate(order.createdAt)}</span>
                     </div>
                   </div>
+
+                  {/* Actions */}
+                  {order.requesterId === order.requester?.id &&
+                    ["PENDING", "APPROVED", "PACKED"].includes(order.status) &&
+                    activeTab === "outgoing" && (
+                      <div className="mt-3 flex justify-end border-t border-muted pt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={() => handleEditClick(order)}
+                        >
+                          Edit Request
+                        </Button>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+
+        <OrderEditDialog
+          order={editingOrder}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSuccess={() => refetch?.()}
+        />
       </div>
     </PageLoader>
   )
