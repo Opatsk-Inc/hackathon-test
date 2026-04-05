@@ -9,6 +9,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "incremental": true,
     "allowJs": true

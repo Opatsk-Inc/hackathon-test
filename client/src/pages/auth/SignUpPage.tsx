@@ -51,7 +51,8 @@ export default function SignUpPage() {
         payload.warehouseId = warehouseId
       }
 
-      const response = await fetch("/auth/signup", {
+      const apiBase = import.meta.env.VITE_API_URL || ""
+      const response = await fetch(`${apiBase}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
