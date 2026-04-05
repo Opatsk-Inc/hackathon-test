@@ -63,7 +63,7 @@ export default function OrdersPage() {
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by ID, cargo, warehouse..."
-              className="w-64 bg-card pl-9"
+              className="w-80 bg-card pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -102,7 +102,7 @@ export default function OrdersPage() {
         </div>
 
         {/* Table */}
-        <Card className="shadow-sm">
+        <Card className="shadow-sm p-0">
           <CardContent className="p-0">
             <Table>
               <TableHeader className="bg-muted/50">
@@ -135,42 +135,42 @@ export default function OrdersPage() {
                   </TableRow>
                 ) : (
                   orders.map((o: IOrder, i: number) => (
-                      <TableRow className={i % 2 === 0 ? "bg-muted/50" : ""} key={o.id}>
-                        <TableCell className="px-4 font-mono text-xs font-medium text-foreground">
-                          {o.id.split("-")[0].toUpperCase()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getOrderStatusVariant(o.status)}>
-                            {formatOrderStatus(o.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {o.provider?.name || "—"}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {o.requester?.name || "—"}
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          {o.resource?.name}{" "}
-                          <span className="ml-2 font-mono text-muted-foreground">
-                            {o.quantity} units
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getPriorityVariant(o.priority)}>
-                            {formatPriorityLevel(o.priority)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {o.trip?.driverName || "—"}
-                        </TableCell>
-                        <TableCell className="px-4 text-right text-muted-foreground">
-                          {formatDate(o.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                      ))
+                    <TableRow className={i % 2 === 1 ? "bg-muted/50" : ""} key={o.id}>
+                      <TableCell className="px-4 font-mono text-xs font-medium text-foreground">
+                        {o.id.split("-")[0].toUpperCase()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getOrderStatusVariant(o.status)}>
+                          {formatOrderStatus(o.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {o.provider?.name || "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {o.requester?.name || "—"}
+                      </TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        {o.resource?.name}{" "}
+                        <span className="ml-2 font-mono text-muted-foreground">
+                          {o.quantity} units
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getPriorityVariant(o.priority)}>
+                          {formatPriorityLevel(o.priority)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {o.trip?.driverName || "—"}
+                      </TableCell>
+                      <TableCell className="px-4 text-right text-muted-foreground">
+                        {formatDate(o.createdAt)}
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
-                    </TableBody>
+              </TableBody>
             </Table>
           </CardContent>
         </Card>

@@ -165,9 +165,8 @@ export default function DriversPage() {
                   return (
                     <TableRow
                       key={trip.id}
-                      className={`${isSos ? "bg-destructive/5" : ""} ${
-                        i % 2 === 0 ? "bg-muted/50" : ""
-                      }`}
+                      className={`${isSos ? "bg-destructive/5" : ""} ${i % 2 === 1 ? "bg-muted/50" : ""
+                        }`}
                     >
                       <TableCell
                         className={`font-medium ${isSos ? "text-destructive" : "text-foreground"}`}

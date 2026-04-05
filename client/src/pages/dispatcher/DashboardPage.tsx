@@ -447,7 +447,7 @@ export default function DashboardPage() {
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row, i) => (
-                      <TableRow className={i % 2 === 0 ? "bg-muted/50" : ""} key={row.id}>
+                      <TableRow className={i % 2 === 1 ? "bg-muted/50" : ""} key={row.id}>
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
                             {flexRender(
@@ -471,7 +471,7 @@ export default function DashboardPage() {
                 </TableBody>
               </Table>
               {/* Pagination controls */}
-              <div className="flex items-center justify-between border-t px-4 py-3">
+              <div className="flex items-center justify-between border-t px-4 pt-4 pb-1">
                 <div className="text-sm text-muted-foreground">
                   Page {table.getState().pagination.pageIndex + 1} of{" "}
                   {table.getPageCount()}
