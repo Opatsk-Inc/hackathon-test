@@ -72,7 +72,7 @@ export default function ManagerLayout() {
             className="w-full justify-start gap-2 px-3 py-2.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           >
             <Settings className="h-4 w-4" />
-            Налаштування
+            Settings
           </Button>
         </div>
       </nav>
@@ -84,7 +84,7 @@ export default function ManagerLayout() {
             variant="ghost"
             onClick={() => setSettingsOpen(true)}
             className="h-10 w-10 p-0 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-            aria-label="Налаштування"
+            aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
           </Button>
@@ -125,7 +125,7 @@ export default function ManagerLayout() {
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Налаштування</DialogTitle>
+            <DialogTitle>Settings</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -147,7 +147,7 @@ export default function ManagerLayout() {
               className="w-full gap-2 font-medium"
             >
               <LogOut className="h-4 w-4" />
-              Вийти з акаунту
+              Log out
             </Button>
           </div>
         </DialogContent>

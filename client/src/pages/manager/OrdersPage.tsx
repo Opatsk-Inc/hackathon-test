@@ -18,23 +18,23 @@ export default function ManagerOrdersPage() {
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
-        <p className="font-medium">Помилка завантаження замовлень</p>
+        <p className="font-medium">Error loading orders</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження замовлень...">
+    <PageLoader isLoading={isLoading} label="Loading orders...">
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TruckIcon className="h-5 w-5 text-foreground" />
-            <h1 className="text-lg font-bold sm:text-xl">Замовлення</h1>
+            <h1 className="text-lg font-bold sm:text-xl">Orders</h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {orders.length} од.
+            {orders.length} units
           </span>
         </div>
 
@@ -50,7 +50,7 @@ export default function ManagerOrdersPage() {
             }`}
           >
             <ArrowDownIcon className="h-4 w-4" />
-            Вхідні
+            Incoming
           </button>
           <button
             type="button"
@@ -62,7 +62,7 @@ export default function ManagerOrdersPage() {
             }`}
           >
             <ArrowUpIcon className="h-4 w-4" />
-            Вихідні
+            Outgoing
           </button>
         </div>
 
@@ -71,7 +71,7 @@ export default function ManagerOrdersPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <TruckIcon className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Немає замовлень</p>
+              <p className="text-sm">No orders found</p>
             </CardContent>
           </Card>
         ) : (
@@ -97,23 +97,23 @@ export default function ManagerOrdersPage() {
                   {/* Resource info */}
                   <div className="space-y-1.5">
                     <p className="text-sm leading-tight font-medium">
-                      {order.resource?.name ?? "Без назви"}
+                      {order.resource?.name ?? "No name"}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span>
-                        Кількість:{" "}
+                        Quantity:{" "}
                         <strong className="text-foreground">
                           {order.quantity}
                         </strong>{" "}
-                        од.
+                        units
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       {order.provider?.name && (
-                        <span>Від: {order.provider.name}</span>
+                        <span>From: {order.provider.name}</span>
                       )}
                       {order.requester?.name && (
-                        <span>Для: {order.requester.name}</span>
+                        <span>For: {order.requester.name}</span>
                       )}
                       <span>{formatDate(order.createdAt)}</span>
                     </div>

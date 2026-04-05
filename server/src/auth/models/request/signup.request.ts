@@ -24,13 +24,13 @@ export class SignupRequest {
 
   @ApiProperty({ description: 'First name', example: 'John', required: false })
   @IsOptional()
-  @Matches(RegExp('^[A-Za-zА-Яа-яІіЇїЄєҐґıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
+  @Matches(RegExp('^[A-Za-z ]+$'))
   @MaxLength(20)
   firstName?: string;
 
   @ApiProperty({ description: 'Last name', example: 'Doe', required: false })
   @IsOptional()
-  @Matches(RegExp('^[A-Za-zА-Яа-яІіЇїЄєҐґıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
+  @Matches(RegExp('^[A-Za-z ]+$'))
   @MaxLength(20)
   lastName?: string;
 

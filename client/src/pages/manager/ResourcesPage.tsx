@@ -24,7 +24,7 @@ function getStockBadge(qty: number) {
     return (
       <Badge variant="destructive" className="gap-1 px-2.5 py-0.5 text-xs">
         <XCircle className="h-3 w-3" />
-        Немає
+        Out of stock
       </Badge>
     )
   }
@@ -35,7 +35,7 @@ function getStockBadge(qty: number) {
         className="gap-1 border-amber-500 px-2.5 py-0.5 text-xs text-amber-600"
       >
         <AlertTriangle className="h-3 w-3" />
-        Мало
+        Low stock
       </Badge>
     )
   }
@@ -44,7 +44,7 @@ function getStockBadge(qty: number) {
       variant="default"
       className="gap-1 bg-green-600 px-2.5 py-0.5 text-xs"
     >
-      <CheckCircle2 className="h-3 w-3" />Є
+      <CheckCircle2 className="h-3 w-3" />In stock
     </Badge>
   )
 }
@@ -67,23 +67,23 @@ export default function ResourcesPage() {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
         <XCircle className="mx-auto mb-2 h-8 w-8" />
-        <p className="font-medium">Помилка завантаження</p>
+        <p className="font-medium">Loading error</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження ресурсів...">
+    <PageLoader isLoading={isLoading} label="Loading resources...">
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-foreground" />
-            <h1 className="text-lg font-bold sm:text-xl">Ресурси</h1>
+            <h1 className="text-lg font-bold sm:text-xl">Resources</h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {inventory.length} од.
+            {inventory.length} units
           </span>
         </div>
 
@@ -92,7 +92,7 @@ export default function ResourcesPage() {
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Пошук..."
+              placeholder="Search..."
               className="h-11 pl-9 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -101,10 +101,10 @@ export default function ResourcesPage() {
           <div className="flex gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="h-11 flex-1 text-sm">
-                <SelectValue placeholder="Категорія" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Всі</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat.toLowerCase()}>
                     {cat}
@@ -114,13 +114,13 @@ export default function ResourcesPage() {
             </Select>
             <Select value={stockFilter} onValueChange={setStockFilter}>
               <SelectTrigger className="h-11 flex-1 text-sm">
-                <SelectValue placeholder="Наявність" />
+                <SelectValue placeholder="Availability" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Всі</SelectItem>
-                <SelectItem value="ok">В наявності</SelectItem>
-                <SelectItem value="low">Мало</SelectItem>
-                <SelectItem value="out">Немає</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="ok">In stock</SelectItem>
+                <SelectItem value="low">Low stock</SelectItem>
+                <SelectItem value="out">Out of stock</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -131,7 +131,7 @@ export default function ResourcesPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Package className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Нічого не знайдено</p>
+              <p className="text-sm">Nothing found</p>
             </CardContent>
           </Card>
         ) : (
@@ -145,7 +145,7 @@ export default function ResourcesPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 space-y-1">
                       <p className="text-sm leading-tight font-medium">
-                        {item.resource?.name ?? "Без назви"}
+                        {item.resource?.name ?? "No name"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {item.resource?.category ?? "—"}
@@ -156,13 +156,13 @@ export default function ResourcesPage() {
                   <div className="mt-3 flex items-center justify-between border-t pt-3 text-xs">
                     <div className="flex gap-4">
                       <div>
-                        <span className="text-muted-foreground">Доступно</span>
+                        <span className="text-muted-foreground">Available</span>
                         <p className="text-base font-semibold tabular-nums">
                           {item.quantityAvailable}
                         </p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Резерв</span>
+                        <span className="text-muted-foreground">Reserved</span>
                         <p className="text-base text-muted-foreground tabular-nums">
                           {item.quantityReserved}
                         </p>

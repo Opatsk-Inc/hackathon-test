@@ -38,23 +38,23 @@ export default function InventoryPage() {
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center text-destructive">
-        <p className="font-medium">Помилка завантаження інвентарю</p>
+        <p className="font-medium">Error loading inventory</p>
         <p className="text-sm opacity-80">{(error as Error).message}</p>
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження інвентарю...">
+    <PageLoader isLoading={isLoading} label="Loading inventory...">
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-foreground" />
-            <h1 className="text-lg font-bold sm:text-xl">Інвентаризація</h1>
+            <h1 className="text-lg font-bold sm:text-xl">Inventory Adjustment</h1>
           </div>
           <span className="text-xs text-muted-foreground">
-            {inventory.length} од.
+            {inventory.length} units
           </span>
         </div>
 
@@ -63,7 +63,7 @@ export default function InventoryPage() {
           <Card className="border-amber-200 bg-amber-50 shadow-sm dark:border-amber-800/30 dark:bg-amber-900/10">
             <CardContent className="flex items-center gap-2 py-3 text-sm text-amber-800 dark:text-amber-200">
               <Edit2 className="h-4 w-4 shrink-0" />
-              <span>Натисніть на кнопку редагування для зміни кількості.</span>
+              <span>Click the edit button to change the quantity.</span>
             </CardContent>
           </Card>
         )}
@@ -73,7 +73,7 @@ export default function InventoryPage() {
           <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <ClipboardCheck className="mb-3 h-10 w-10 opacity-40" />
-              <p className="text-sm">Інвентар порожній</p>
+              <p className="text-sm">Inventory is empty</p>
             </CardContent>
           </Card>
         ) : (
@@ -95,12 +95,12 @@ export default function InventoryPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 space-y-1">
                         <p className="text-sm leading-tight font-medium">
-                          {item.resource?.name ?? "Без назви"}
+                          {item.resource?.name ?? "No name"}
                         </p>
                         <div className="flex gap-4 text-xs">
                           <div>
                             <span className="text-muted-foreground">
-                              Доступно
+                              Available
                             </span>
                             <p className="text-base font-semibold tabular-nums">
                               {item.quantityAvailable}
@@ -108,7 +108,7 @@ export default function InventoryPage() {
                           </div>
                           <div>
                             <span className="text-muted-foreground">
-                              Резерв
+                              Reserved
                             </span>
                             <p className="text-base text-muted-foreground tabular-nums">
                               {item.quantityReserved}
@@ -155,7 +155,7 @@ export default function InventoryPage() {
                             onClick={() => startEdit(item)}
                           >
                             <Edit2 className="h-3.5 w-3.5" />
-                            Змінити
+                            Edit
                           </Button>
                         )}
                       </div>
@@ -164,7 +164,7 @@ export default function InventoryPage() {
                     {/* Success message */}
                     {isHighlighted && (
                       <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-400">
-                        ✓ Кількість оновлено
+                        ✓ Quantity updated
                       </p>
                     )}
                   </CardContent>

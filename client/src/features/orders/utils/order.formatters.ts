@@ -1,6 +1,6 @@
 import type { IOrder } from "@/shared/types"
 
-// Фільтрування
+// Filtering
 export const filterOrdersByStatus = (orders: IOrder[], status: string) => {
   return orders.filter(
     (order: IOrder) => order.status.toLowerCase() === status.toLowerCase()
@@ -13,23 +13,23 @@ export const filterOrdersByPriority = (orders: IOrder[], priority: string) => {
   )
 }
 
-// Форматування
+// Formatting
 export const formatOrderStatus = (status: string) => {
   const s = status.toLowerCase()
-  if (s === "pending") return "Очікує"
-  if (s === "approved") return "Затверджено"
-  if (s === "packed") return "Запаковано"
-  if (s === "in_transit") return "В дорозі"
-  if (s === "delivered") return "Доставлено"
-  if (s === "cancelled") return "Скасовано"
+  if (s === "pending") return "Pending"
+  if (s === "approved") return "Approved"
+  if (s === "packed") return "Packed"
+  if (s === "in_transit") return "In Transit"
+  if (s === "delivered") return "Delivered"
+  if (s === "cancelled") return "Cancelled"
   return status
 }
 
 export const formatPriorityLevel = (priority: string) => {
   const p = priority.toLowerCase()
-  if (p === "normal") return "Звичайний"
-  if (p === "high") return "Високий"
-  if (p === "critical") return "Критичний"
+  if (p === "normal") return "Normal"
+  if (p === "high") return "High"
+  if (p === "critical") return "Critical"
   return priority
 }
 
@@ -56,7 +56,7 @@ export const getPriorityVariant = (priority: string) => {
   return "outline"
 }
 
-// Пошук
+// Search
 export const searchOrders = (orders: IOrder[], query: string) => {
   const q = query.toLowerCase()
   return orders.filter((order: IOrder) => {

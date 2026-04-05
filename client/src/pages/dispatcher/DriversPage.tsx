@@ -78,17 +78,17 @@ export default function DriversPage() {
   if (error) {
     return (
       <div className="p-4 text-destructive">
-        Помилка завантаження даних: {(error as Error).message}
+        Error loading data: {(error as Error).message}
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження водіїв...">
+    <PageLoader isLoading={isLoading} label="Loading drivers...">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">
-            Активні поїздки та Автопарк
+            Active Trips & Fleet
           </h1>
         </div>
 
@@ -100,7 +100,7 @@ export default function DriversPage() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Пошук водія по імені або ID рейсу..."
+                placeholder="Search for driver by name or trip ID..."
                 className="h-9 w-64 bg-card pl-9"
               />
             </div>
@@ -112,7 +112,7 @@ export default function DriversPage() {
             className="gap-2 text-muted-foreground"
           >
             <Filter className="h-4 w-4" />
-            Додаткові фільтри
+            Additional filters
           </Button>
         </div>
 
@@ -131,19 +131,19 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold tracking-wider uppercase">
-                  Ім'я водія
+                  Driver Name
                 </TableHead>
                 <TableHead className="text-xs font-semibold tracking-wider uppercase">
-                  Рейс (Trip)
+                  Trip ID
                 </TableHead>
                 <TableHead className="text-xs font-semibold tracking-wider uppercase">
-                  Остання локація
+                  Last Location
                 </TableHead>
                 <TableHead className="text-xs font-semibold tracking-wider uppercase">
-                  Статус
+                  Status
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold tracking-wider uppercase">
-                  Дії
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -154,7 +154,7 @@ export default function DriversPage() {
                     colSpan={5}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    Немає активних поїздок
+                    No active trips found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -172,7 +172,7 @@ export default function DriversPage() {
                       <TableCell
                         className={`font-medium ${isSos ? "text-destructive" : "text-foreground"}`}
                       >
-                        {trip.driverName || "Невідомо"}
+                        {trip.driverName || "Unknown"}
                       </TableCell>
 
                       <TableCell className="font-mono text-xs text-muted-foreground">
@@ -182,16 +182,16 @@ export default function DriversPage() {
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {trip.currentLat && trip.currentLng
                           ? `${trip.currentLat.toFixed(4)}, ${trip.currentLng.toFixed(4)}`
-                          : "Невідомо"}
+                          : "Unknown"}
                       </TableCell>
 
                       <TableCell>
                         {isSos ? (
                           <Badge variant="sos">SOS ERROR</Badge>
                         ) : isPending ? (
-                          <Badge variant="outline">Очікує старт</Badge>
+                          <Badge variant="outline">Waiting to start</Badge>
                         ) : (
-                          <Badge variant="in_transit">У рейсі</Badge>
+                          <Badge variant="in_transit">In transit</Badge>
                         )}
                       </TableCell>
 
@@ -219,7 +219,7 @@ export default function DriversPage() {
                             {copiedTripId === trip.id ? (
                               <>
                                 <Check className="h-3 w-3 text-green-600" />
-                                <span>Скопійовано!</span>
+                                <span>Copied!</span>
                               </>
                             ) : (
                               <>
@@ -247,9 +247,9 @@ export default function DriversPage() {
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Скопіювати посилання вручну</DialogTitle>
+              <DialogTitle>Copy link manually</DialogTitle>
               <DialogDescription>
-                Будь ласка, скопіюйте посилання для водія вручну
+                Please copy the driver link manually
               </DialogDescription>
             </DialogHeader>
             {fallbackTrip && (

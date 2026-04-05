@@ -68,7 +68,7 @@ export default function DispatcherLayout() {
             className="w-full justify-start gap-2 px-3 py-2.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           >
             <Settings className="h-4 w-4" />
-            Налаштування
+            Settings
           </Button>
         </div>
       </nav>
@@ -81,7 +81,7 @@ export default function DispatcherLayout() {
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Налаштування</DialogTitle>
+            <DialogTitle>Settings</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -99,11 +99,11 @@ export default function DispatcherLayout() {
 
             <Button
               variant="destructive"
-              onClick={() => alert("Вихід з акаунту")}
+              onClick={() => alert("Logging out...")}
               className="w-full gap-2 font-medium"
             >
               <LogOut className="h-4 w-4" />
-              Вийти з акаунту
+              Log out
             </Button>
           </div>
         </DialogContent>

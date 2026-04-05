@@ -10,7 +10,7 @@ export class UpdateUserRequest {
   @ApiProperty({ description: 'First name', required: false })
   @IsOptional()
   @IsNotEmpty()
-  @Matches(RegExp('^[A-Za-zА-Яа-яІіЇїЄєҐґıöüçğşİÖÜÇĞŞñÑáéíóúÁÉÍÓÚ ]+$'))
+  @Matches(RegExp('^[A-Za-z ]+$'))
   @MaxLength(20)
   firstName?: string;
 

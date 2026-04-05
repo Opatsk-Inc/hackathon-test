@@ -21,18 +21,18 @@ interface FormState {
 }
 
 const PRIORITIES = [
-  { value: "NORMAL", label: "Звичайний" },
-  { value: "HIGH", label: "Високий" },
-  { value: "CRITICAL", label: "Критичний" },
+  { value: "NORMAL", label: "Normal" },
+  { value: "HIGH", label: "High" },
+  { value: "CRITICAL", label: "Critical" },
 ]
 
 const validate = (form: FormState) => {
   const errors: Record<string, string> = {}
-  if (!form.resourceId) errors.resourceId = "Оберіть ресурс"
+  if (!form.resourceId) errors.resourceId = "Select resource"
   if (!form.quantity || parseInt(form.quantity, 10) < 1) {
-    errors.quantity = "Введіть кількість (мін. 1)"
+    errors.quantity = "Enter quantity (min. 1)"
   }
-  if (!form.priority) errors.priority = "Оберіть пріоритет"
+  if (!form.priority) errors.priority = "Select priority"
   return errors
 }
 
@@ -101,7 +101,7 @@ export default function ReplenishPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <PlusCircle className="h-5 w-5 text-foreground" />
-          <h1 className="text-lg font-bold sm:text-xl">Поповнення</h1>
+          <h1 className="text-lg font-bold sm:text-xl">Replenishment</h1>
         </div>
         <Card className="shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -109,13 +109,13 @@ export default function ReplenishPage() {
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
             <h2 className="text-base font-semibold text-foreground">
-              Заявку створено!
+              Request created!
             </h2>
             <p className="mt-1 text-center text-sm text-muted-foreground">
-              Заявку на поповнення успішно відправлено.
+              Replenishment request successfully sent.
             </p>
             <Button onClick={resetForm} className="mt-6 w-full" size="lg">
-              Створити ще одну
+              Create another
             </Button>
           </CardContent>
         </Card>
@@ -127,7 +127,7 @@ export default function ReplenishPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <PlusCircle className="h-5 w-5 text-foreground" />
-        <h1 className="text-lg font-bold sm:text-xl">Нове поповнення</h1>
+        <h1 className="text-lg font-bold sm:text-xl">New Replenishment</h1>
       </div>
 
       <Card className="shadow-sm">
@@ -136,10 +136,10 @@ export default function ReplenishPage() {
             {/* Resource */}
             <div>
               <label className="mb-2 block text-sm font-medium text-foreground">
-                Ресурс <span className="text-destructive">*</span>
+                Resource <span className="text-destructive">*</span>
               </label>
               {isLoadingResources ? (
-                <DataLoader label="Завантаження ресурсів..." />
+                <DataLoader label="Loading resources..." />
               ) : (
                 <Select
                   value={form.resourceId}
@@ -150,7 +150,7 @@ export default function ReplenishPage() {
                       errors.resourceId ? "border-destructive" : ""
                     }`}
                   >
-                    <SelectValue placeholder="Оберіть ресурс" />
+                    <SelectValue placeholder="Select resource" />
                   </SelectTrigger>
                   <SelectContent>
                     {resources.map((r: IResource) => (
@@ -172,13 +172,13 @@ export default function ReplenishPage() {
             {/* Quantity */}
             <div>
               <label className="mb-2 block text-sm font-medium text-foreground">
-                Кількість <span className="text-destructive">*</span>
+                Quantity <span className="text-destructive">*</span>
               </label>
               <Input
                 name="quantity"
                 type="number"
                 min={1}
-                placeholder="Введіть кількість"
+                placeholder="Enter quantity"
                 value={form.quantity}
                 onChange={handleChange}
                 className={`h-12 ${errors.quantity ? "border-destructive" : ""}`}
@@ -194,7 +194,7 @@ export default function ReplenishPage() {
             {/* Priority */}
             <div>
               <label className="mb-2 block text-sm font-medium text-foreground">
-                Пріоритет <span className="text-destructive">*</span>
+                Priority <span className="text-destructive">*</span>
               </label>
               <div className="flex gap-2">
                 {PRIORITIES.map((p) => (
@@ -221,14 +221,14 @@ export default function ReplenishPage() {
             </div>
 
             {/* Submit */}
-            {isCreating && <DataLoader label="Відправка заявки..." />}
+            {isCreating && <DataLoader label="Sending request..." />}
             <Button
               type="submit"
               disabled={isCreating}
               className="w-full"
               size="lg"
             >
-              Відправити заявку
+              Send request
             </Button>
           </form>
         </CardContent>

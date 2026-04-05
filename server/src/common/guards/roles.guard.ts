@@ -14,7 +14,7 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // якщо @Roles() не вказано — доступ відкритий
+    // If @Roles() is not specified, access is open
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }

@@ -18,19 +18,19 @@ export default function WarehousesPage() {
   if (error) {
     return (
       <div className="flex items-center gap-2 p-4 text-destructive">
-        <Boxes className="h-5 w-5" /> Помилка завантаження даних:{" "}
+        <Boxes className="h-5 w-5" /> Error loading data:{" "}
         {(error as Error).message}
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження складів...">
+    <PageLoader isLoading={isLoading} label="Loading warehouses...">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <Warehouse className="h-6 w-6 text-foreground" />
           <h1 className="text-2xl font-bold text-foreground">
-            Склади та ресурси
+            Warehouses & Resources
           </h1>
         </div>
 
@@ -71,20 +71,20 @@ export default function WarehousesPage() {
 
                   <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     <Boxes className="h-3.5 w-3.5" />
-                    Ресурси
+                    Resources
                   </div>
                   <div className="max-h-48 overflow-y-auto rounded-md border border-border pr-1">
                     <Table className="text-sm">
                       <TableHeader className="sticky top-0 bg-muted/50">
                         <TableRow className="hover:bg-transparent">
                           <TableHead className="h-8 px-2 py-1 text-xs uppercase">
-                            Назва
+                            Name
                           </TableHead>
                           <TableHead className="h-8 px-2 py-1 text-xs uppercase">
-                            Категорія
+                            Category
                           </TableHead>
                           <TableHead className="h-8 px-2 py-1 text-right text-xs uppercase">
-                            К-сть
+                            Qty
                           </TableHead>
                         </TableRow>
                       </TableHeader>

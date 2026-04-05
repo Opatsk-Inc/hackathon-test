@@ -44,25 +44,25 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="p-4 text-destructive">
-        Помилка завантаження даних: {(error as Error).message}
+        Error loading data: {(error as Error).message}
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження замовлень...">
+    <PageLoader isLoading={isLoading} label="Loading orders...">
       <div className="flex flex-col gap-6">
         <div className="mb-2 flex items-center gap-2">
           <ListOrdered className="h-6 w-6 text-foreground" />
-          <h1 className="text-2xl font-bold">Усі замовлення</h1>
+          <h1 className="text-2xl font-bold">All Orders</h1>
         </div>
 
-        {/* Фільтри */}
+        {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Пошук по ID, вантажу, складу..."
+              placeholder="Search by ID, cargo, warehouse..."
               className="w-64 bg-card pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -72,36 +72,36 @@ export default function OrdersPage() {
             <SelectTrigger className="w-48 bg-card">
               <div className="flex items-center gap-2">
                 <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                <SelectValue placeholder="Всі статуси" />
+                <SelectValue placeholder="All statuses" />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Всі статуси</SelectItem>
-              <SelectItem value="pending">Очікує</SelectItem>
-              <SelectItem value="approved">Затверджено</SelectItem>
-              <SelectItem value="packed">Запаковано</SelectItem>
-              <SelectItem value="in_transit">В дорозі</SelectItem>
-              <SelectItem value="delivered">Доставлено</SelectItem>
-              <SelectItem value="cancelled">Скасовано</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="packed">Packed</SelectItem>
+              <SelectItem value="in_transit">In transit</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
           <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
             <SelectTrigger className="w-48 bg-card">
               <div className="flex items-center gap-2">
                 <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                <SelectValue placeholder="Всі терміновості" />
+                <SelectValue placeholder="All priorities" />
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Всі терміновості</SelectItem>
-              <SelectItem value="normal">Звичайний</SelectItem>
-              <SelectItem value="high">Високий</SelectItem>
-              <SelectItem value="critical">Критичний</SelectItem>
+              <SelectItem value="all">All priorities</SelectItem>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Таблиця */}
+        {/* Table */}
         <Card className="shadow-sm">
           <CardContent className="p-0">
             <Table>
@@ -110,16 +110,16 @@ export default function OrdersPage() {
                   <TableHead className="w-28 px-4 text-xs uppercase">
                     ID
                   </TableHead>
-                  <TableHead className="text-xs uppercase">Статус</TableHead>
-                  <TableHead className="text-xs uppercase">Звідки</TableHead>
-                  <TableHead className="text-xs uppercase">Куди</TableHead>
-                  <TableHead className="text-xs uppercase">Вантаж</TableHead>
+                  <TableHead className="text-xs uppercase">Status</TableHead>
+                  <TableHead className="text-xs uppercase">From</TableHead>
+                  <TableHead className="text-xs uppercase">To</TableHead>
+                  <TableHead className="text-xs uppercase">Cargo</TableHead>
                   <TableHead className="text-xs uppercase">
-                    Терміновість
+                    Priority
                   </TableHead>
-                  <TableHead className="text-xs uppercase">Водій</TableHead>
+                  <TableHead className="text-xs uppercase">Driver</TableHead>
                   <TableHead className="px-4 text-right text-xs uppercase">
-                    Створено
+                    Created
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -130,7 +130,7 @@ export default function OrdersPage() {
                       colSpan={8}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      Нічого не знайдено
+                      Nothing found
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -153,7 +153,7 @@ export default function OrdersPage() {
                         <TableCell className="font-medium text-foreground">
                           {o.resource?.name}{" "}
                           <span className="ml-2 font-mono text-muted-foreground">
-                            {o.quantity} од.
+                            {o.quantity} units
                           </span>
                         </TableCell>
                         <TableCell>

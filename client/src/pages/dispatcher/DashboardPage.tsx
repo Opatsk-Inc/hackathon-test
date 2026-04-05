@@ -139,13 +139,13 @@ function DashboardMapContent({
                   {w.address}
                 </span>
                 <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs">
-                  <span className="text-muted-foreground">Зарезервовано:</span>
+                  <span className="text-muted-foreground">Reserved:</span>
                   <strong className="text-foreground">
                     {w.inventory?.reduce<number>(
                       (acc: number, inv) => acc + inv.quantityReserved,
                       0
                     ) || 0}{" "}
-                    од.
+                    units
                   </strong>
                 </div>
               </div>
@@ -208,8 +208,8 @@ function DashboardMapContent({
         const color = DRIVER_MARKER_COLORS[trip.status] ?? "#6b7280"
         const track = roadRoutes[trip.id]?.geometry ?? baseTracks[trip.id]
         const rotation = track ? computeHeading(track) : 0
-        const providerName = trip.order.provider?.name || "Склад"
-        const requesterName = trip.order.requester?.name || "Пункт призначення"
+        const providerName = trip.order.provider?.name || "Warehouse"
+        const requesterName = trip.order.requester?.name || "Destination"
 
         return (
           <MapMarker
@@ -239,9 +239,9 @@ function DashboardMapContent({
             </MarkerContent>
             <MarkerTooltip>
               <div className="flex min-w-48 flex-col gap-1">
-                <strong className="text-sm">Водій · {trip.status}</strong>
+                <strong className="text-sm">Driver · {trip.status}</strong>
                 <span className="text-xs text-muted-foreground">
-                  Маршрут: {providerName} → {requesterName}
+                  Route: {providerName} → {requesterName}
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">
                   Trip: {trip.id.split("-")[0]}
@@ -274,7 +274,7 @@ const columns: ColumnDef<IActiveTrip>[] = [
   },
   {
     accessorKey: "status",
-    header: "Статус",
+    header: "Status",
     cell: ({ row }) => (
       <Badge variant={row.original.status === "SOS" ? "sos" : "in_transit"}>
         {formatTripStatus(row.original.status)}
@@ -283,25 +283,25 @@ const columns: ColumnDef<IActiveTrip>[] = [
   },
   {
     accessorKey: "origin",
-    header: "Звідки",
+    header: "From",
     cell: ({ row }) => (
       <div className="text-xs">
-        {row.original.order.provider?.name || "Невідомо"}
+        {row.original.order.provider?.name || "Unknown"}
       </div>
     ),
   },
   {
     accessorKey: "destination",
-    header: "Куди",
+    header: "To",
     cell: ({ row }) => (
       <div className="text-xs">
-        {row.original.order.requester?.name || "Невідомо"}
+        {row.original.order.requester?.name || "Unknown"}
       </div>
     ),
   },
   {
     accessorKey: "priority",
-    header: "Терміновість",
+    header: "Priority",
     cell: ({ row }) => {
       const priority = row.original.order.priority || "NORMAL"
       return (
@@ -334,21 +334,21 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="p-4 text-destructive">
-        Помилка завантаження даних: {(error as Error).message}
+        Error loading data: {(error as Error).message}
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження дашборду...">
+    <PageLoader isLoading={isLoading} label="Loading dashboard...">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-2">
           <LayoutDashboard className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">Головний Дашборд</h1>
+          <h1 className="text-2xl font-bold">Main Dashboard</h1>
         </div>
 
         <div className="flex flex-col gap-6">
-          {/* Карта */}
+          {/* Map */}
           <Card className="relative min-h-125 w-full overflow-hidden border-dashed bg-muted/10 shadow-none">
             <CardContent className="absolute inset-0 p-0">
               <Map center={[31.1656, 48.3794]} zoom={5}>
@@ -364,12 +364,12 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Список доставок */}
+          {/* Delivery List */}
           <Card className="flex-1 bg-card shadow-sm">
             <CardHeader className="border-b px-4 py-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Truck className="h-5 w-5 text-muted-foreground" />
-                Активні доставки
+                Active Deliveries
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -410,7 +410,7 @@ export default function DashboardPage() {
                         colSpan={columns.length}
                         className="py-6 text-center text-muted-foreground"
                       >
-                        Немає активних замовлень
+                        No active orders found
                       </TableCell>
                     </TableRow>
                   )}
@@ -419,7 +419,7 @@ export default function DashboardPage() {
               {/* Pagination controls */}
               <div className="flex items-center justify-between border-t px-4 py-3">
                 <div className="text-sm text-muted-foreground">
-                  Сторінка {table.getState().pagination.pageIndex + 1} з{" "}
+                  Page {table.getState().pagination.pageIndex + 1} of{" "}
                   {table.getPageCount()}
                 </div>
                 <div className="flex items-center gap-2">
@@ -429,7 +429,7 @@ export default function DashboardPage() {
                     size="sm"
                     variant="outline"
                   >
-                    Назад
+                    Previous
                   </Button>
                   <Button
                     disabled={!table.getCanNextPage()}
@@ -437,7 +437,7 @@ export default function DashboardPage() {
                     size="sm"
                     variant="outline"
                   >
-                    Вперед
+                    Next
                   </Button>
                 </div>
               </div>

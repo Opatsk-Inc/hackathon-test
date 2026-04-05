@@ -112,7 +112,7 @@ export default function DriverPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <DataLoader
-          label="Завантаження даних доставки..."
+          label="Loading delivery data..."
           className="text-lg"
         />
       </div>
@@ -128,13 +128,13 @@ export default function DriverPage() {
               <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
             <CardTitle className="text-center text-xl">
-              Посилання недійсне
+              Link invalid
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center text-muted-foreground">
-            <p>Це посилання не знайдено або термін його дії минув.</p>
+            <p>This link was not found or has expired.</p>
             <p className="mt-2 text-sm">
-              Зверніться до диспетчера за новим посиланням.
+              Contact the dispatcher for a new link.
             </p>
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ export default function DriverPage() {
               <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
             <CardTitle className="text-center text-xl">
-              Помилка завантаження
+              Loading error
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center">
@@ -164,7 +164,7 @@ export default function DriverPage() {
               className="mt-4 gap-2"
             >
               <RefreshCw className="h-4 w-4" />
-              Спробувати знову
+              Try again
             </Button>
           </CardContent>
         </Card>
@@ -174,9 +174,9 @@ export default function DriverPage() {
 
   const order = trip?.order
   const statusLabels: Record<string, string> = {
-    PENDING: "Очікує",
-    EN_ROUTE: "В дорозі",
-    DELIVERED: "Доставлено",
+    PENDING: "Pending",
+    EN_ROUTE: "In Transit",
+    DELIVERED: "Delivered",
     SOS: "SOS",
   }
 
@@ -205,7 +205,7 @@ export default function DriverPage() {
           <div className="flex items-center gap-2">
             <Truck className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-xl font-bold">Інформація про доставку</h1>
+              <h1 className="text-xl font-bold">Delivery Information</h1>
               {order?.id && (
                 <p className="text-sm text-muted-foreground">
                   <code className="font-mono font-medium">
@@ -263,13 +263,13 @@ export default function DriverPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Package className="h-4 w-4" />
-              Ресурс
+              Resource
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="rounded-md bg-muted p-3">
               <p className="font-medium">
-                {order?.resource?.name ?? "Невідомий ресурс"}
+                {order?.resource?.name ?? "Unknown resource"}
               </p>
               {order?.resource?.category && (
                 <p className="text-xs text-muted-foreground">
@@ -278,7 +278,7 @@ export default function DriverPage() {
               )}
               {order?.quantity && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Кількість: {order.quantity}
+                  Quantity: {order.quantity}
                 </p>
               )}
             </div>
@@ -288,9 +288,9 @@ export default function DriverPage() {
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Відправлення</p>
+                  <p className="text-xs text-muted-foreground">Origin</p>
                   <p className="font-medium">
-                    {order?.provider?.name ?? "Не відомо"}
+                    {order?.provider?.name ?? "Unknown"}
                   </p>
                   {order?.provider?.address && (
                     <p className="text-xs text-muted-foreground">
@@ -307,9 +307,9 @@ export default function DriverPage() {
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Доставка</p>
+                  <p className="text-xs text-muted-foreground">Destination</p>
                   <p className="font-medium">
-                    {order?.requester?.name ?? "Не відомо"}
+                    {order?.requester?.name ?? "Unknown"}
                   </p>
                   {order?.requester?.address && (
                     <p className="text-xs text-muted-foreground">
@@ -326,7 +326,7 @@ export default function DriverPage() {
         {trip?.driverName && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Водій</CardTitle>
+              <CardTitle className="text-base">Driver</CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
               <p className="font-medium">{trip.driverName}</p>
@@ -343,7 +343,7 @@ export default function DriverPage() {
             disabled={isStartingTrip}
           >
             <Truck className="h-6 w-6" />
-            {isStartingTrip ? "Запуск..." : "Почати поїздку"}
+            {isStartingTrip ? "Starting..." : "Start Trip"}
           </Button>
         )}
 
@@ -356,7 +356,7 @@ export default function DriverPage() {
             disabled={isFinishingTrip}
           >
             <Flag className="h-6 w-6" />
-            {isFinishingTrip ? "Завершення..." : "Завершити замовлення"}
+            {isFinishingTrip ? "Finishing..." : "Complete Order"}
           </Button>
         )}
 
@@ -366,11 +366,11 @@ export default function DriverPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                SOS активний
+                SOS active
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              <p>Сигнал SOS надіслано. Очікуйте допомоги.</p>
+              <p>SOS signal sent. Wait for assistance.</p>
             </CardContent>
           </Card>
         )}
@@ -381,11 +381,11 @@ export default function DriverPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                Підтвердження SOS
+                SOS Confirmation
               </DialogTitle>
               <DialogDescription>
-                Ви впевнені, що хочете надіслати сигнал SOS? Це скасує поточне
-                замовлення.
+                Are you sure you want to send an SOS signal? This will cancel the
+                current order.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex gap-2 sm:flex-row">
@@ -394,14 +394,14 @@ export default function DriverPage() {
                 onClick={() => setSosModalOpen(false)}
                 disabled={isSendingSos}
               >
-                Назад
+                Back
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleSosConfirm}
                 disabled={isSendingSos}
               >
-                {isSendingSos ? "Надсилання..." : "Скасувати замовлення"}
+                {isSendingSos ? "Sending..." : "Cancel Order"}
               </Button>
             </DialogFooter>
           </DialogContent>

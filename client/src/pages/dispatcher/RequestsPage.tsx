@@ -92,13 +92,13 @@ export default function RequestsPage() {
   if (error) {
     return (
       <div className="p-4 text-destructive">
-        Помилка завантаження даних: {(error as Error).message}
+        Error loading data: {(error as Error).message}
       </div>
     )
   }
 
   return (
-    <PageLoader isLoading={isLoading} label="Завантаження запитів...">
+    <PageLoader isLoading={isLoading} label="Loading requests...">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
@@ -106,11 +106,11 @@ export default function RequestsPage() {
               <Inbox className="h-5 w-5 text-foreground" />
             </div>
             <h1 className="font-sans text-2xl font-bold text-foreground">
-              Вхідні запити
+              Incoming Requests
             </h1>
           </div>
           <p className="ml-12 text-muted-foreground">
-            Запити від інших складів на переміщення ресурсів
+            Requests from other warehouses for resource transfers
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export default function RequestsPage() {
             <Card className="border-dashed bg-muted/20 shadow-none">
               <CardContent className="flex flex-col items-center justify-center gap-3 p-12 text-muted-foreground">
                 <Inbox className="h-10 w-10 opacity-20" />
-                <p>Немає нових запитів на даний момент.</p>
+                <p>No new requests at the moment.</p>
               </CardContent>
             </Card>
           ) : (
@@ -134,16 +134,16 @@ export default function RequestsPage() {
                       <Badge variant={getPriorityVariant(r.priority)}>
                         {formatPriorityLevel(r.priority)}
                       </Badge>
-                      <Badge variant="pending">Новий Запит</Badge>
+                      <Badge variant="pending">New Request</Badge>
                     </div>
 
                     <div className="mt-1 flex items-center gap-3 text-base font-medium">
                       <span className="border-b border-dashed border-border pb-0.5 text-muted-foreground">
-                        Система (Очікування)
+                        System (Pending)
                       </span>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <span className="border-b border-dashed border-border pb-0.5 text-foreground">
-                        {r.requester?.name || "Невідомо"}
+                        {r.requester?.name || "Unknown"}
                       </span>
                     </div>
 
@@ -155,13 +155,13 @@ export default function RequestsPage() {
                         </span>
                         <span className="px-1 text-muted-foreground">·</span>
                         <span className="font-mono text-foreground">
-                          {r.quantity} од.
+                          {r.quantity} units
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {new Date(r.createdAt).toLocaleString("uk-UA")}
+                          {new Date(r.createdAt).toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
@@ -173,14 +173,14 @@ export default function RequestsPage() {
                       onClick={() => setApproveOrderId(r.id)}
                       className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      Прийняти
+                      Accept
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
-                      Відхилити
+                      Reject
                     </Button>
                   </div>
                 </CardContent>
@@ -197,11 +197,10 @@ export default function RequestsPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Contact className="h-5 w-5 text-muted-foreground" />
-                Призначити водія
+                Assign Driver
               </DialogTitle>
               <DialogDescription>
-                Введіть ім'я водія, який буде здійснювати цю доставку, щоб
-                створити поїздку.
+                Enter the driver's name for this delivery to create a trip.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleApproveSubmit}>
@@ -209,7 +208,7 @@ export default function RequestsPage() {
                 <div className="grid gap-2">
                   <Input
                     id="name"
-                    placeholder="Наприклад: М. Шевченко"
+                    placeholder="Example: John Doe"
                     value={driverName}
                     onChange={(e) => setDriverName(e.target.value)}
                     className="col-span-3"
@@ -233,10 +232,10 @@ export default function RequestsPage() {
                   onClick={() => setApproveOrderId(null)}
                   disabled={isApproving}
                 >
-                  Скасувати
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isApproving}>
-                  {isApproving ? "Обробка..." : "Прийняти замовлення"}
+                  {isApproving ? "Processing..." : "Accept Order"}
                 </Button>
               </DialogFooter>
             </form>
@@ -257,10 +256,10 @@ export default function RequestsPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
-                Посилання для водія створено
+                Driver link created
               </DialogTitle>
               <DialogDescription>
-                Скопіюйте посилання та надішліть водію для початку доставки
+                Copy the link and send it to the driver to start the delivery
               </DialogDescription>
             </DialogHeader>
             {magicLinkData && (
@@ -287,7 +286,7 @@ export default function RequestsPage() {
                 </div>
                 {copySuccess && (
                   <p className="text-sm text-green-600">
-                    Посилання скопійовано!
+                    Link copied!
                   </p>
                 )}
               </div>
@@ -298,7 +297,7 @@ export default function RequestsPage() {
                 variant="outline"
                 onClick={() => setMagicLinkData(null)}
               >
-                Закрити
+                Close
               </Button>
               {magicLinkData && (
                 <Button
@@ -307,7 +306,7 @@ export default function RequestsPage() {
                   className="gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Відкрити посилання
+                  Open Link
                 </Button>
               )}
             </DialogFooter>

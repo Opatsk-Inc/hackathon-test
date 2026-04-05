@@ -37,11 +37,11 @@ export const MAP_CONFIG = {
 }
 
 export const NAV_ITEMS = [
-  { to: "/dispatcher", label: "Дашборд", icon: "LayoutDashboard" },
-  { to: "/dispatcher/orders", label: "Замовлення", icon: "ClipboardList" },
-  { to: "/dispatcher/warehouses", label: "Склади", icon: "Warehouse" },
-  { to: "/dispatcher/requests", label: "Вхідні запити", icon: "Inbox" },
-  { to: "/dispatcher/drivers", label: "Водії", icon: "Truck" },
+  { to: "/dispatcher", label: "Dashboard", icon: "LayoutDashboard" },
+  { to: "/dispatcher/orders", label: "Orders", icon: "ClipboardList" },
+  { to: "/dispatcher/warehouses", label: "Warehouses", icon: "Warehouse" },
+  { to: "/dispatcher/requests", label: "Incoming Requests", icon: "Inbox" },
+  { to: "/dispatcher/drivers", label: "Drivers", icon: "Truck" },
 ]
 
 export const DATE_FORMAT_OPTIONS = {
