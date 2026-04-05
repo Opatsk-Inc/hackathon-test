@@ -18,7 +18,7 @@ ENV POSTGRES_DB="postgres"
 
 RUN npx prisma generate
 
-RUN npm run build
+RUN npm run build && ls -la dist/main.js
 
 RUN npm prune --omit=dev
 
