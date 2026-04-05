@@ -106,9 +106,6 @@ export default function InventoryPage() {
               Inventory Adjustment
             </h1>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {inventory.length} items
-          </span>
         </div>
 
         {/* KPI Strip */}

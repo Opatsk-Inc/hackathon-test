@@ -24,9 +24,7 @@ import {
 } from "@/components/ui/select"
 import { useResourcesAvailability } from "@/features/warehouses"
 import type { IInventory } from "@/shared/types"
-import {
-  computeSeverity,
-} from "@/shared/utils/severity"
+import { computeSeverity } from "@/shared/utils/severity"
 
 function getStockBadge(
   qty: number,
@@ -190,9 +188,6 @@ export default function ResourcesPage() {
             <Package className="h-5 w-5 shrink-0 text-foreground" />
             <h1 className="truncate text-lg font-bold sm:text-xl">Resources</h1>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {allInventory.length} items
-          </span>
         </div>
 
         {/* KPI Strip */}
@@ -207,19 +202,17 @@ export default function ResourcesPage() {
 
         {/* Quick Filters (Segmented Controls) */}
         <div className="flex gap-1 rounded-lg bg-muted p-1">
-          {(
-            [
-              { value: "all" as QuickFilter, label: "All" },
-              { value: "critical" as QuickFilter, label: "Critical" },
-              { value: "warning" as QuickFilter, label: "Warning" },
-              { value: "low" as QuickFilter, label: "Low Stock" },
-            ]
-          ).map((opt) => (
+          {[
+            { value: "all" as QuickFilter, label: "All" },
+            { value: "critical" as QuickFilter, label: "Critical" },
+            { value: "warning" as QuickFilter, label: "Warning" },
+            { value: "low" as QuickFilter, label: "Low Stock" },
+          ].map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setQuickFilter(opt.value)}
-              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all ${
+              className={`flex-1 rounded-md px-3 py-0.5 text-xs font-medium transition-all ${
                 quickFilter === opt.value
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -289,9 +282,7 @@ export default function ResourcesPage() {
                 reserved={item.quantityReserved}
                 badge={getStockBadge(item.quantityAvailable, item.severity)}
                 className="transition-shadow active:bg-muted/50"
-                metricsExtra={
-                  <div className="ml-auto border-t pt-2" />
-                }
+                metricsExtra={<div className="ml-auto border-t pt-2" />}
               />
             ))}
           </div>

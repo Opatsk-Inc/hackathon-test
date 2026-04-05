@@ -57,7 +57,13 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   )
 }
 
-function Content({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Content({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   const { onClose } = useModal()
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -76,7 +82,13 @@ function Content({ children, className = "" }: { children: React.ReactNode; clas
   )
 }
 
-function Header({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Header({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return (
     <div className={`mb-4 flex items-center justify-between ${className}`}>
       {children}
@@ -84,7 +96,13 @@ function Header({ children, className = "" }: { children: React.ReactNode; class
   )
 }
 
-function Title({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Title({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return <h2 className={`text-lg font-semibold ${className}`}>{children}</h2>
 }
 
@@ -103,12 +121,26 @@ function CloseButton({ className = "" }: { className?: string }) {
   )
 }
 
-function Body({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Body({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return <div className={`${className}`}>{children}</div>
 }
 
-function Footer({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mt-6 flex justify-end gap-2 ${className}`}>{children}</div>
+function Footer({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={`mt-6 flex justify-end gap-2 ${className}`}>{children}</div>
+  )
 }
 
 Modal.Content = Content

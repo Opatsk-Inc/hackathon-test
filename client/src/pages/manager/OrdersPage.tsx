@@ -131,9 +131,6 @@ export default function ManagerOrdersPage() {
             <TruckIcon className="h-5 w-5 shrink-0 text-foreground" />
             <h1 className="truncate text-lg font-bold sm:text-xl">Orders</h1>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {allOrders.length} items
-          </span>
         </div>
 
         {/* KPI Strip */}
