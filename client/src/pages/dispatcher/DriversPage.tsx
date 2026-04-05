@@ -158,14 +158,16 @@ export default function DriversPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTrips.map((trip: IActiveTrip) => {
+                filteredTrips.map((trip: IActiveTrip, i: number) => {
                   const isSos = trip.status === "SOS"
                   const isPending = trip.status === "PENDING"
 
                   return (
                     <TableRow
                       key={trip.id}
-                      className={isSos ? "bg-destructive/5" : ""}
+                      className={`${isSos ? "bg-destructive/5" : ""} ${
+                        i % 2 === 0 ? "bg-muted/50" : ""
+                      }`}
                     >
                       <TableCell
                         className={`font-medium ${isSos ? "text-destructive" : "text-foreground"}`}

@@ -134,43 +134,43 @@ export default function OrdersPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  orders.map((o: IOrder) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="px-4 font-mono text-xs font-medium text-foreground">
-                        {o.id.split("-")[0].toUpperCase()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getOrderStatusVariant(o.status)}>
-                          {formatOrderStatus(o.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {o.provider?.name || "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {o.requester?.name || "—"}
-                      </TableCell>
-                      <TableCell className="font-medium text-foreground">
-                        {o.resource?.name}{" "}
-                        <span className="ml-2 font-mono text-muted-foreground">
-                          {o.quantity} од.
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getPriorityVariant(o.priority)}>
-                          {formatPriorityLevel(o.priority)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {o.trip?.driverName || "—"}
-                      </TableCell>
-                      <TableCell className="px-4 text-right text-muted-foreground">
-                        {formatDate(o.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  orders.map((o: IOrder, i: number) => (
+                      <TableRow className={i % 2 === 0 ? "bg-muted/50" : ""} key={o.id}>
+                        <TableCell className="px-4 font-mono text-xs font-medium text-foreground">
+                          {o.id.split("-")[0].toUpperCase()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getOrderStatusVariant(o.status)}>
+                            {formatOrderStatus(o.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {o.provider?.name || "—"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {o.requester?.name || "—"}
+                        </TableCell>
+                        <TableCell className="font-medium text-foreground">
+                          {o.resource?.name}{" "}
+                          <span className="ml-2 font-mono text-muted-foreground">
+                            {o.quantity} од.
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getPriorityVariant(o.priority)}>
+                            {formatPriorityLevel(o.priority)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {o.trip?.driverName || "—"}
+                        </TableCell>
+                        <TableCell className="px-4 text-right text-muted-foreground">
+                          {formatDate(o.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                      ))
                 )}
-              </TableBody>
+                    </TableBody>
             </Table>
           </CardContent>
         </Card>

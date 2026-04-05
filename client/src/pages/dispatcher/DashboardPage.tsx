@@ -382,9 +382,9 @@ export default function DashboardPage() {
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -392,8 +392,8 @@ export default function DashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id}>
+                    table.getRowModel().rows.map((row, i) => (
+                      <TableRow className={i % 2 === 0 ? "bg-muted/50" : ""} key={row.id}>
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
                             {flexRender(
