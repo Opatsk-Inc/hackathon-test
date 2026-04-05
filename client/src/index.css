@@ -326,3 +326,15 @@
     transform: none !important;
   }
 }
+/* --- MapLibre Popup Resets ---------------------------------- */
+
+.maplibregl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}

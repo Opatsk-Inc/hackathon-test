@@ -665,7 +665,7 @@ function MarkerTooltip({
   return createPortal(
     <div
       className={cn(
-        "animate-in rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md fade-in-0 zoom-in-95",
+        "animate-in rounded-lg border border-white/10 bg-black/80 px-3 py-1.5 text-xs font-medium text-white shadow-xl backdrop-blur-md fade-in-0 zoom-in-95 dark:bg-background/90",
         className
       )}
     >
@@ -734,7 +734,7 @@ const positionClasses = {
 
 function ControlGroup({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-md border border-border bg-background shadow-sm [&>button:not(:last-child)]:border-b [&>button:not(:last-child)]:border-border">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-white/20 bg-background/60 p-0.5 shadow-lg backdrop-blur-md dark:bg-card/60 [&>button:not(:last-child)]:mb-0.5">
       {children}
     </div>
   )
@@ -757,8 +757,8 @@ function ControlButton({
       aria-label={label}
       type="button"
       className={cn(
-        "flex size-8 items-center justify-center transition-colors hover:bg-accent dark:hover:bg-accent/40",
-        disabled && "pointer-events-none cursor-not-allowed opacity-50"
+        "flex size-8 items-center justify-center rounded-lg transition-all hover:bg-primary hover:text-primary-foreground focus:outline-none disabled:opacity-50",
+        "bg-background/40 hover:scale-105 active:scale-95 dark:bg-white/5 dark:hover:bg-primary"
       )}
       disabled={disabled}
     >
