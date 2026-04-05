@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import logo from "@/assets/ЛевчикТранс.svg"
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -24,17 +25,20 @@ const WelcomePage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
       <div
-        className={`w-full max-w-md transform text-center transition-all duration-300 ease-out ${
+        className={`w-full max-w-sm transform rounded-xl border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 ease-out dark:border-zinc-800 dark:bg-zinc-900 ${
           isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         }`}
       >
-        <h1 className="mb-4 text-5xl font-bold text-gray-900">LevTrans</h1>
-        <p className="mb-10 max-w-md text-lg text-gray-600">
-          Your logistics platform for seamless transportation management.
-          Streamline your operations with our intuitive dashboard.
-        </p>
+        <div className="mb-6 flex flex-col items-center space-y-4 text-center">
+          <img src={logo} alt="Levtrans Logo" className="h-16 w-auto" />
+          <h1 className="text-2xl font-bold tracking-tight">Levtrans</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Your logistics platform for seamless transportation management.
+            Streamline your operations with our intuitive dashboard.
+          </p>
+        </div>
 
         <div className="space-y-4">
           <Button
@@ -45,11 +49,11 @@ const WelcomePage: React.FC = () => {
             Start
           </Button>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
             Already have an account?{" "}
             <button
               onClick={handleAlreadyHaveAccount}
-              className="font-medium text-blue-600 underline transition-colors hover:text-blue-800"
+              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Log in
             </button>
