@@ -1,13 +1,15 @@
 import { useState, useCallback } from "react"
 import { useRequests } from "@/features/requests"
 import { useOrders } from "@/features/orders"
+import { rejectOrder as rejectOrderAPI } from "@/features/orders/api/orders.api"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { IOrder } from "@/shared/types"
 import {
   Inbox,
   ArrowRight,
   Clock,
-  Package,
   Contact,
+  Package,
   Copy,
   ExternalLink,
   Check,
@@ -33,13 +35,16 @@ import {
 
 export default function RequestsPage() {
   const { requests: pendingOrders, isLoading, error } = useRequests()
-  const {
-    approveOrder,
-    isApproving,
-    approveOrderError,
-    rejectOrder,
-    isRejecting,
-  } = useOrders()
+  const { approveOrder, isApproving, approveOrderError } = useOrders()
+
+  const queryClient = useQueryClient()
+  const { mutate: rejectOrderApi, isPending: isRejecting } = useMutation({
+    mutationFn: rejectOrderAPI,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requests"] })
+      queryClient.invalidateQueries({ queryKey: ["orders"] })
+    },
+  })
 
   const [approveOrderId, setApproveOrderId] = useState<string | null>(null)
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null)
@@ -99,7 +104,7 @@ export default function RequestsPage() {
 
   const handleRejectConfirm = () => {
     if (!rejectOrderId) return
-    rejectOrder(rejectOrderId, {
+    rejectOrderApi(rejectOrderId, {
       onSuccess: () => {
         setRejectOrderId(null)
       },
@@ -154,12 +159,14 @@ export default function RequestsPage() {
                       <Badge variant="pending">New Request</Badge>
                     </div>
 
-                    <div className="mt-1 flex items-center gap-3 text-base font-medium">
-                      <span className="border-b border-dashed border-border pb-0.5 text-muted-foreground">
+                    <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                      <span className="border-b border-dashed border-border pb-0.5 text-sm text-muted-foreground sm:text-base">
                         System (Pending)
                       </span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      <span className="border-b border-dashed border-border pb-0.5 text-foreground">
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <span className="border-b border-dashed border-border pb-0.5 text-sm text-foreground sm:text-base">
                         {r.requester?.name || "Unknown"}
                       </span>
                     </div>
@@ -184,18 +191,18 @@ export default function RequestsPage() {
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 gap-2 border-t border-border pt-3 md:flex-col md:border-t-0 md:border-l md:pt-0 md:pl-4">
+                  <div className="flex w-full flex-col gap-2 border-t border-border pt-3 md:w-36 md:shrink-0 md:border-t-0 md:border-l md:pt-0 md:pl-4">
                     <Button
                       size="sm"
                       onClick={() => setApproveOrderId(r.id)}
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="h-8 w-full bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90"
                     >
                       Accept
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="w-full"
+                      className="h-8 w-full px-3 text-xs"
                       onClick={() => setRejectOrderId(r.id)}
                       disabled={isRejecting}
                     >
@@ -304,9 +311,7 @@ export default function RequestsPage() {
                   </Button>
                 </div>
                 {copySuccess && (
-                  <p className="text-sm text-green-600">
-                    Link copied!
-                  </p>
+                  <p className="text-sm text-green-600">Link copied!</p>
                 )}
               </div>
             )}
@@ -342,7 +347,8 @@ export default function RequestsPage() {
                 Reject Request
               </DialogTitle>
               <DialogDescription>
-                Are you sure you want to reject this request? This action cannot be undone.
+                Are you sure you want to reject this request? This action cannot
+                be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4 gap-2 sm:justify-end">

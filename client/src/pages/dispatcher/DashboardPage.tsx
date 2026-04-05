@@ -4,10 +4,14 @@ import {
   Truck,
   MapPin,
   TruckIcon,
+  AlertTriangle,
   Navigation,
   Package,
   Zap,
   MoreVertical,
+  BarChart3,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -51,7 +55,10 @@ import {
   formatPriorityLevel,
   getPriorityVariant,
 } from "@/features/orders/utils/order.formatters"
-import { formatTripStatus, getTripStatusVariant } from "@/features/trips/utils/trip.utils"
+import {
+  formatTripStatus,
+  getTripStatusVariant,
+} from "@/features/trips/utils/trip.utils"
 import { SosConfirmDialog } from "@/components/ui/sos-confirm-dialog"
 
 const ROUTE_COLORS_BY_STATUS: Record<string, string> = {
@@ -88,6 +95,7 @@ function DashboardMapContent({
   baseTracks,
   hoveredTripId,
   setHoveredTripId,
+  onSelectSosTrip,
   onResolveSos,
   isResolvingSos,
 }: {
@@ -97,6 +105,7 @@ function DashboardMapContent({
   baseTracks: Record<string, LngLat[]>
   hoveredTripId: string | null
   setHoveredTripId: (id: string | null) => void
+  onSelectSosTrip: (tripId: string | null) => void
   onResolveSos: (tripId: string) => void
   isResolvingSos: boolean
 }) {
@@ -157,7 +166,7 @@ function DashboardMapContent({
                 </div>
               </div>
             </MarkerContent>
-            <MarkerTooltip className="border-primary/20">
+            <MarkerTooltip className="shadow-lg">
               <div className="flex min-w-56 flex-col gap-2 p-1">
                 <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
                   <div className="flex items-center gap-2">
@@ -291,6 +300,7 @@ function DashboardMapContent({
             latitude={lat}
             rotation={rotation}
             rotationAlignment="map"
+            onClick={() => onSelectSosTrip(isSOS ? trip.id : null)}
           >
             <MarkerContent>
               <div
@@ -349,7 +359,7 @@ function DashboardMapContent({
                 </div>
               </div>
             </MarkerContent>
-            <MarkerTooltip className="min-w-64 border-white/10">
+            <MarkerTooltip className="min-w-64 shadow-lg">
               <div className="flex min-w-64 flex-col gap-2.5 p-2">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
@@ -544,66 +554,103 @@ const columns: ColumnDef<IActiveTrip>[] = [
   },
 ]
 
-function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
+function MapStatsOverlay({
+  activeTrips,
+  mobileOpen,
+  onMobileToggle,
+}: {
+  activeTrips: IActiveTrip[]
+  mobileOpen: boolean
+  onMobileToggle: () => void
+}) {
   const enRoute = activeTrips.filter((t) => t.status === "EN_ROUTE").length
   const sos = activeTrips.filter((t) => t.status === "SOS").length
   const pending = activeTrips.filter((t) => t.status === "PENDING").length
 
   return (
-    <div className="absolute top-4 left-4 z-20 flex min-w-[280px] flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-5 antialiased shadow-2xl">
-      <div className="flex items-center justify-between border-b border-white/5 pb-3">
-        <div>
-          <h3 className="text-xs font-black tracking-[0.2em] text-zinc-400 uppercase">
-            Network Status
-          </h3>
-          <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium text-primary">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span>
+    <>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={onMobileToggle}
+        className="absolute top-3 left-3 z-30 h-8 gap-1.5 border border-white/10 bg-zinc-950/90 px-2 text-[11px] font-semibold text-zinc-100 shadow-lg backdrop-blur hover:bg-zinc-900 sm:hidden"
+      >
+        <BarChart3 className="h-3.5 w-3.5" />
+        Status
+        {mobileOpen ? (
+          <ChevronUp className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5" />
+        )}
+      </Button>
+
+      <div
+        className={cn(
+          "absolute right-3 left-3 z-20 flex flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-950/95 p-4 antialiased shadow-2xl transition-all duration-200 sm:top-4 sm:right-auto sm:left-4 sm:min-w-[280px] sm:p-5",
+          mobileOpen
+            ? "top-12 translate-y-0 opacity-100"
+            : "pointer-events-none top-10 -translate-y-1 opacity-0 sm:pointer-events-auto sm:translate-y-0 sm:opacity-100"
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+          <div>
+            <h3 className="text-xs font-black tracking-[0.2em] text-zinc-400 uppercase">
+              Network Status
+            </h3>
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium text-primary">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span>
+              </span>
+              Live Deployment
+            </p>
+          </div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5">
+            <MoreVertical className="h-4 w-4 text-zinc-500" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col rounded-xl border border-white/5 bg-white/5 p-2.5 transition-colors hover:bg-white/10">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
+              <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+              Active
+            </div>
+            <span className="mt-1 text-2xl font-black text-white">
+              {enRoute}
             </span>
-            Live Deployment
-          </p>
-        </div>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5">
-          <MoreVertical className="h-4 w-4 text-zinc-500" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        <div className="flex flex-col rounded-xl border border-white/5 bg-white/5 p-2.5 transition-colors hover:bg-white/10">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            Active
           </div>
-          <span className="mt-1 text-2xl font-black text-white">{enRoute}</span>
-        </div>
 
-        <div className="flex flex-col rounded-xl border border-white/5 bg-zinc-900/50 p-2.5 transition-colors hover:bg-white/10">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
-            <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-            Wait
+          <div className="flex flex-col rounded-xl border border-white/5 bg-zinc-900/50 p-2.5 transition-colors hover:bg-white/10">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400">
+              <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+              Wait
+            </div>
+            <span className="mt-1 text-2xl font-black text-white">
+              {pending}
+            </span>
           </div>
-          <span className="mt-1 text-2xl font-black text-white">{pending}</span>
+
+          <div className="flex flex-col rounded-xl border border-rose-400/30 bg-rose-500/15 p-2.5 transition-colors hover:bg-rose-500/25">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-300">
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400 shadow-[0_0_12px_rgba(251,113,133,0.95)]" />
+              SOS
+            </div>
+            <span className="mt-1 text-2xl leading-none font-black text-rose-200 drop-shadow-[0_0_8px_rgba(251,113,133,0.35)]">
+              {sos}
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-col rounded-xl border border-red-500/20 bg-red-500/10 p-2.5 transition-colors hover:bg-red-500/20">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400">
-            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
-            SOS
-          </div>
-          <span className="mt-1 text-2xl leading-none font-black text-red-500">
-            {sos}
+        <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-2">
+          <span className="text-[10px] font-bold tracking-wider text-primary-foreground/70 uppercase">
+            System Integrity
           </span>
+          <span className="text-[10px] font-black text-primary">OPTIMAL</span>
         </div>
       </div>
-
-      <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-2">
-        <span className="text-[10px] font-bold tracking-wider text-primary-foreground/70 uppercase">
-          System Integrity
-        </span>
-        <span className="text-[10px] font-black text-primary">OPTIMAL</span>
-      </div>
-    </div>
+    </>
   )
 }
 
@@ -613,6 +660,10 @@ function DashboardPage() {
   const roadRoutes = useDashboardRoadRoutes({ baseTracks })
   const [hoveredTripId, setHoveredTripId] = useState<string | null>(null)
   const [confirmTripId, setConfirmTripId] = useState<string | null>(null)
+  const [selectedSosTripId, setSelectedSosTripId] = useState<string | null>(
+    null
+  )
+  const [mobileStatsOpen, setMobileStatsOpen] = useState(false)
 
   const { resolveSos, isResolvingSos, resolveSosError } = useTrips()
 
@@ -620,8 +671,14 @@ function DashboardPage() {
     if (confirmTripId) {
       resolveSos(confirmTripId)
       setConfirmTripId(null)
+      setSelectedSosTripId(null)
     }
   }
+
+  const selectedSosTrip = useMemo(
+    () => activeTrips.find((trip) => trip.id === selectedSosTripId) ?? null,
+    [activeTrips, selectedSosTripId]
+  )
 
   const table = useReactTable({
     data: activeTrips,
@@ -653,9 +710,13 @@ function DashboardPage() {
 
         <div className="flex flex-col gap-6">
           {/* Map */}
-          <Card className="relative min-h-125 w-full overflow-hidden border-dashed bg-muted/10 shadow-none">
+          <Card className="relative h-[52vh] min-h-[360px] w-full overflow-hidden border-dashed bg-muted/10 shadow-none sm:h-auto sm:min-h-125">
             <CardContent className="absolute inset-0 p-0">
-              <MapStatsOverlay activeTrips={activeTrips} />
+              <MapStatsOverlay
+                activeTrips={activeTrips}
+                mobileOpen={mobileStatsOpen}
+                onMobileToggle={() => setMobileStatsOpen((prev) => !prev)}
+              />
               <Map center={[31.1656, 48.3794]} zoom={5}>
                 <DashboardMapContent
                   warehouses={warehouses}
@@ -664,70 +725,193 @@ function DashboardPage() {
                   baseTracks={baseTracks}
                   hoveredTripId={hoveredTripId}
                   setHoveredTripId={setHoveredTripId}
+                  onSelectSosTrip={setSelectedSosTripId}
                   onResolveSos={(tripId) => setConfirmTripId(tripId)}
                   isResolvingSos={isResolvingSos}
                 />
               </Map>
+
+              {selectedSosTrip && (
+                <div className="pointer-events-none absolute right-3 bottom-3 left-3 z-30 sm:hidden">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="pointer-events-auto h-10 w-full gap-2 font-semibold shadow-xl"
+                    onClick={() => setConfirmTripId(selectedSosTrip.id)}
+                    disabled={isResolvingSos}
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    Resolve SOS •{" "}
+                    {selectedSosTrip.id.split("-")[0].toUpperCase()}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Delivery List */}
           <Card className="flex-1 bg-card shadow-sm">
             <CardHeader className="border-b px-4 py-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Truck className="h-5 w-5 text-muted-foreground" />
-                Active Deliveries
-              </CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Truck className="h-5 w-5 text-muted-foreground" />
+                  Active Deliveries
+                </CardTitle>
+                <Badge variant="secondary" className="text-xs">
+                  {activeTrips.length} total
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row, i) => (
-                      <TableRow
-                        className={i % 2 === 0 ? "bg-muted/50" : ""}
-                        key={row.id}
+            <CardContent className="p-3 sm:p-0">
+              <div className="mb-3 flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-xs text-muted-foreground sm:mx-4 sm:mt-3 sm:mb-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+                <span>
+                  Showing {table.getRowModel().rows.length} of{" "}
+                  {activeTrips.length}
+                </span>
+                <span className="hidden sm:inline">
+                  Live trip tracking data
+                </span>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="space-y-3 sm:hidden">
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => {
+                    const trip = row.original
+                    return (
+                      <Card
+                        key={`trip-mobile-${trip.id}`}
+                        className="overflow-hidden border border-border/70 bg-card/90 shadow-sm"
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
+                        <CardContent className="space-y-3 p-3.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-mono text-xs font-semibold text-foreground/90">
+                                #{trip.id.split("-")[0].toUpperCase()}
+                              </p>
+                              <p className="mt-1 text-sm font-medium text-foreground">
+                                {trip.order.resource?.name || "No cargo"}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Badge
+                                variant={getTripStatusVariant(trip.status)}
+                              >
+                                {formatTripStatus(trip.status)}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge
+                              variant={getPriorityVariant(trip.order.priority)}
+                            >
+                              {formatPriorityLevel(trip.order.priority)}
+                            </Badge>
+                            <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                              Qty: {trip.order.quantity}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-2 rounded-md border border-border/60 bg-muted/20 p-2.5 text-xs">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                From
+                              </span>
+                              <span className="truncate font-medium text-foreground">
+                                {trip.order.provider?.name || "-"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">To</span>
+                              <span className="truncate font-medium text-foreground">
+                                {trip.order.requester?.name || "-"}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                Driver
+                              </span>
+                              <span className="truncate font-medium text-foreground">
+                                {trip.driverName || "-"}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                      No active orders found
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto sm:block">
+                <Table className="min-w-full">
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            key={header.id}
+                            className="whitespace-nowrap"
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
                         ))}
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="py-6 text-center text-muted-foreground"
-                      >
-                        No active orders found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              {/* Pagination controls */}
-              <div className="flex items-center justify-between border-t px-4 pt-4 pb-1">
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map((row, i) => (
+                        <TableRow
+                          className={
+                            i % 2 === 0
+                              ? "bg-muted/35 transition-colors hover:bg-muted/55"
+                              : "transition-colors hover:bg-muted/40"
+                          }
+                          key={row.id}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell
+                              key={cell.id}
+                              className="whitespace-nowrap"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="py-6 text-center text-muted-foreground"
+                        >
+                          No active orders found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination controls - Stack on mobile */}
+              <div className="flex flex-col items-center justify-between gap-3 border-t px-4 pt-4 pb-1 sm:flex-row">
                 <div className="text-sm text-muted-foreground">
                   Page {table.getState().pagination.pageIndex + 1} of{" "}
                   {table.getPageCount()}

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { NavLink, Outlet } from "react-router-dom"
 import {
   Settings,
+  Menu,
   User,
   LogOut,
   LayoutDashboard,
@@ -32,6 +33,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function DispatcherLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
     removeToken()
@@ -41,7 +43,8 @@ export default function DispatcherLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <OfflineBanner />
-      <nav className="flex w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4">
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <nav className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-card py-4 sm:flex">
         <Logo />
 
         <div className="mt-2 flex flex-1 flex-col gap-0.5">
@@ -80,10 +83,85 @@ export default function DispatcherLayout() {
         </div>
       </nav>
 
+      {/* Mobile top bar */}
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card/95 px-3 backdrop-blur sm:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setMobileMenuOpen(true)}
+          className="h-9 w-9"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <p className="text-sm font-semibold tracking-wide text-foreground">
+          Dispatcher
+        </p>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSettingsOpen(true)}
+          className="h-9 w-9"
+          aria-label="Open settings"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </header>
+
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-background p-6">
+      <main className="flex-1 overflow-y-auto bg-background p-3 pt-16 sm:p-6">
         <Outlet />
       </main>
+
+      {/* Mobile hamburger drawer */}
+      <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <DialogContent className="top-0 left-0 h-full w-[85%] max-w-[320px] translate-x-0 translate-y-0 rounded-none border-r border-border p-0 sm:hidden">
+          <div className="flex h-full flex-col">
+            <div className="border-b border-border px-4 py-4">
+              <Logo />
+            </div>
+
+            <div className="mt-2 flex flex-1 flex-col gap-0.5 px-2">
+              {NAV_ITEMS.map((item: NavItem) => {
+                const Icon =
+                  ICON_MAP[item.icon as keyof typeof ICON_MAP] || (() => null)
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === "/dispatcher"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-md px-3 py-3 text-sm no-underline transition-colors ${
+                        isActive
+                          ? "bg-muted font-semibold text-foreground"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </NavLink>
+                )
+              })}
+            </div>
+
+            <div className="mt-auto border-t border-border p-3">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  setSettingsOpen(true)
+                }}
+                className="w-full justify-start gap-2 px-3 py-2.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="sm:max-w-md">

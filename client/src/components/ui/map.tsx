@@ -579,7 +579,7 @@ function MarkerPopup({
   return createPortal(
     <div
       className={cn(
-        "relative animate-in rounded-md border bg-popover p-3 text-popover-foreground shadow-md fade-in-0 zoom-in-95",
+        "relative animate-in rounded-md bg-popover p-3 text-popover-foreground shadow-md fade-in-0 zoom-in-95",
         className
       )}
     >
@@ -693,7 +693,7 @@ function MarkerTooltip({
         }, 250)
       }}
       className={cn(
-        "animate-in rounded-lg border border-white/10 bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white shadow-2xl antialiased fade-in-0 zoom-in-95 dark:bg-black",
+        "animate-in rounded-lg border border-white/10 bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white antialiased shadow-2xl fade-in-0 zoom-in-95 dark:bg-black",
         className
       )}
     >

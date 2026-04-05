@@ -34,7 +34,7 @@ export default function WarehousesPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
           {warehouses?.map((w: IWarehouseWithTotals) => {
             return (
               <Card key={w.id} className="bg-card">

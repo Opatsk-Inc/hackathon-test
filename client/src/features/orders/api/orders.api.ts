@@ -17,7 +17,11 @@ export const rejectOrder = (orderId: string) =>
   fetchWithAuth(`/api/orders/${orderId}/reject`, {
     method: "PATCH",
   })
-export const updateOrder = (orderId: string, payload: { quantity?: number; priority?: string }) =>
+
+export const updateOrder = (
+  orderId: string,
+  payload: { quantity?: number; priority?: string }
+) =>
   fetchWithAuth(`/api/orders/${orderId}`, {
     method: "PATCH",
     body: JSON.stringify(payload),

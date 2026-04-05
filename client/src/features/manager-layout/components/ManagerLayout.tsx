@@ -1,5 +1,10 @@
-import { useEffect, useRef, useState } from "react"
-import { useLocation, NavLink, Outlet } from "react-router-dom"
+import { useState } from "react"
+import {
+  useLocation,
+  useNavigationType,
+  NavLink,
+  Outlet,
+} from "react-router-dom"
 import {
   Settings,
   User,
@@ -29,35 +34,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ClipboardCheck,
 }
 
-const MANAGER_ROUTE_ORDER = [
-  "/manager",
-  "/manager/orders",
-  "/manager/replenish",
-  "/manager/inventory",
-]
-
-function getManagerRouteIndex(pathname: string): number {
-  if (pathname === "/manager" || pathname === "/manager/resources") {
-    return 0
-  }
-
-  const index = MANAGER_ROUTE_ORDER.findIndex((route) => route === pathname)
-  return index === -1 ? 0 : index
-}
-
 export function ManagerLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const location = useLocation()
+  const navigationType = useNavigationType()
   const prefersReducedMotion = useReducedMotion()
-  const currentRouteIndex = getManagerRouteIndex(location.pathname)
-  const previousRouteIndexRef = useRef(currentRouteIndex)
-
-  const slideDirection =
-    currentRouteIndex >= previousRouteIndexRef.current ? 1 : -1
-
-  useEffect(() => {
-    previousRouteIndexRef.current = currentRouteIndex
-  }, [currentRouteIndex])
+  const slideDirection = navigationType === "POP" ? -1 : 1
 
   const handleLogout = () => {
     removeToken()
