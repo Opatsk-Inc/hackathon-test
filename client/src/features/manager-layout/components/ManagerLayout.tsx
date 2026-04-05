@@ -37,7 +37,7 @@ export default function ManagerLayout() {
 
   return (
     <div
-      className="font-sans flex h-screen overflow-x-hidden bg-background text-foreground"
+      className="flex h-screen overflow-x-hidden bg-background font-sans text-foreground"
       style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* Desktop sidebar */}
@@ -81,7 +81,7 @@ export default function ManagerLayout() {
       </nav>
 
       {/* Main content */}
-      <main className="min-w-0 flex-1 overflow-y-auto bg-background p-3 pb-20 sm:p-6 " >
+      <main className="min-w-0 flex-1 overflow-y-auto bg-background p-3 pb-20 sm:p-6">
         <header className="mb-4 flex items-center justify-end sm:mb-6 sm:hidden">
           <Button
             variant="ghost"
@@ -126,8 +126,8 @@ export default function ManagerLayout() {
 
       {/* Settings dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100%-1rem)] rounded-2xl p-4 sm:w-full sm:max-w-md">
+          <DialogHeader className="text-center">
             <DialogTitle>Settings</DialogTitle>
           </DialogHeader>
 
