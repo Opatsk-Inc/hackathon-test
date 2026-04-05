@@ -628,20 +628,35 @@ function MarkerTooltip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isSelfHoveredRef = useRef(false)
+
   useEffect(() => {
     if (!map) return
 
     tooltip.setDOMContent(container)
 
     const handleMouseEnter = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
       tooltip.setLngLat(marker.getLngLat()).addTo(map)
     }
-    const handleMouseLeave = () => tooltip.remove()
+
+    const handleMouseLeave = () => {
+      timeoutRef.current = setTimeout(() => {
+        if (!isSelfHoveredRef.current) {
+          tooltip.remove()
+        }
+      }, 250)
+    }
 
     marker.getElement()?.addEventListener("mouseenter", handleMouseEnter)
     marker.getElement()?.addEventListener("mouseleave", handleMouseLeave)
 
     return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
       marker.getElement()?.removeEventListener("mouseenter", handleMouseEnter)
       marker.getElement()?.removeEventListener("mouseleave", handleMouseLeave)
       tooltip.remove()
@@ -664,6 +679,19 @@ function MarkerTooltip({
 
   return createPortal(
     <div
+      onMouseEnter={() => {
+        isSelfHoveredRef.current = true
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }}
+      onMouseLeave={() => {
+        isSelfHoveredRef.current = false
+        timeoutRef.current = setTimeout(() => {
+          tooltip.remove()
+        }, 250)
+      }}
       className={cn(
         "animate-in rounded-lg border border-white/10 bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white shadow-2xl antialiased fade-in-0 zoom-in-95 dark:bg-black",
         className

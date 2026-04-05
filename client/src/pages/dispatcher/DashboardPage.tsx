@@ -607,7 +607,7 @@ function MapStatsOverlay({ activeTrips }: { activeTrips: IActiveTrip[] }) {
   )
 }
 
-export default function DashboardPage() {
+function DashboardPage() {
   const { warehouses, activeTrips, error, isLoading } = useDashboard()
   const baseTracks = useDashboardTripTracks({ activeTrips, warehouses })
   const roadRoutes = useDashboardRoadRoutes({ baseTracks })
@@ -775,3 +775,5 @@ export default function DashboardPage() {
     </PageLoader>
   )
 }
+
+export default DashboardPage
